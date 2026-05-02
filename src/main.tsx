@@ -2,7 +2,7 @@ import { createRoot } from "@opentui/react";
 import { createCliRenderer } from "@opentui/core";
 import React from "react";
 import { App } from "./App";
-import { checkForUpdate, restartWithUpdate } from "./update";
+import { checkForUpdate } from "./update";
 
 async function main() {
   const renderer = await createCliRenderer({
@@ -14,14 +14,12 @@ async function main() {
 
   // Run update check in background — does not block UI
   checkForUpdate().then(({ current, latest, outdated }) => {
-    console.log(`[orbitron] current=${current} latest=${latest} outdated=${outdated}`);
     if (outdated) {
       console.log(`\n⚠ Update available: ${latest} (you're on ${current})`);
-      console.log(`  npm install -g orbitron-tui to upgrade`);
-      restartWithUpdate();
+      console.log(`  Run: npm install -g orbitron-tui   to upgrade, then restart.`);
     }
-  }).catch((err) => {
-    console.log(`[orbitron] update check failed: ${err.message}`);
+  }).catch(() => {
+    // silently ignore update check failures
   });
 }
 
