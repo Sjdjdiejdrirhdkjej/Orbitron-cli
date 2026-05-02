@@ -1,6 +1,6 @@
 {
   "name": "orbitron-tui",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A modular TUI backend for Orbitron",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
