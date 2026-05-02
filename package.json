@@ -1,15 +1,22 @@
 {
+  "type": "module",
   "name": "orbitron-tui",
   "version": "1.0.3",
   "description": "A modular TUI backend for Orbitron",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "orbitron": "bin/orbitron"
+  },
   "scripts": {
-    "build": "bun run build",
-    "start": "bun run src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "bun build src/index.ts --outdir dist --target bun && cp bin/orbitron dist/orbitron && chmod +x dist/orbitron",
+    "start": "bun run bin/orbitron",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
+    "@opentui/core": "^0.2.1",
+    "@opentui/react": "^0.2.1",
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0"
   },

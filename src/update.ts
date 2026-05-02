@@ -23,8 +23,8 @@ export function getCurrentVersion(): string {
       if (pkg.version) return pkg.version;
     } catch { /* fall through */ }
     // Fall back to local source
-    const selfDir = dirname(fileURLToPath(import.meta.url));
-    const pkgPath = join(selfDir, "..", "package.json");
+    const selfDir = dirname(__dirname);
+    const pkgPath = join(selfDir, "package.json");
     const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
     return pkg.version ?? "0.0.0";
   } catch {
