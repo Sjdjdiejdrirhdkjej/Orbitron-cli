@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
+import { logMessage } from './logger.js';
 
 export const PACKAGE_NAME = 'orbitron-tui';
 const PACKAGE_JSON_PATH = new URL('../package.json', import.meta.url);
@@ -174,4 +175,26 @@ export function restartCurrentProcess() {
   });
   child.unref();
   return { started: true, pid: child.pid ?? null };
+}
+
+export function restartWithUpdate() {
+  const updateProcess = spawn('npm', ['run', 'update'], {
+    stdio: 'inherit',
+    detached: true,
+    shell: true,
+  });
+
+  updateProcess.unref();
+  logMessage('Update started in the background. Please restart the app manually to apply changes.');
+}
+
+export async function performUpdate() {
+  try {
+    logMessage('Starting update...');
+    await runUpdateScript();
+    logMessage('Update completed successfully! Please restart the app to apply the changes.');
+  } catch (error) {
+    logMessage(`Update failed: ${error.message}`);
+    throw error;
+  }
 }
