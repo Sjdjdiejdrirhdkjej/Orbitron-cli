@@ -1,0 +1,6 @@
+# Ignore compiled outputs and vendor
+src/*.js
+src/*.js.map
+vendor/
+orbitron-tui-*.tgz
+*.log

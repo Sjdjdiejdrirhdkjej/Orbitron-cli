@@ -1,0 +1,24 @@
+{
+  "name": "orbitron-tui",
+  "version": "1.0.1",
+  "description": "A modular TUI backend for Orbitron",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "bun run build",
+    "start": "bun run src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "tui",
+    "backend",
+    "modular"
+  ],
+  "author": "johndih",
+  "license": "MIT"
+}
