@@ -2,7 +2,7 @@
 
 - **Stack**: Bun + OpenTUI (@opentui/react + @opentui/core) + React 19 + TypeScript
 - **Entry**: `bun run src/main.tsx` or `orbitron` (bin script)
-- **Backend**: `https://fireworks-endpoint--57crestcrepe.replit.app` — OpenAI-compatible `/api/chat` + `/api/models`
+- **Backend**: `https://orbitron--pastelsjuice8t.replit.app` — OpenAI-compatible `/api/chat` + `/api/models`
 
 ## Architecture
 
@@ -296,10 +296,39 @@ The TUI now exposes backend URL switching and the onboarding copy was clarified 
 
 - Launch screen now treats API key entry as optional and shows backend health/latency up front.
 - Command text has been tightened to Orbitron-specific wording so the app reads as a backend-connected TUI, not a Codebuff fork.
-- Backend remains pinned to `https://fireworks-endpoint--57crestcrepe.replit.app`; `/backend` is now compatibility-only and points users to `/status` and `/models` rather than implying switching is supported.
+- Backend remains pinned to `https://orbitron--pastelsjuice8t.replit.app`; `/backend` is now compatibility-only and points users to `/status` and `/models` rather than implying switching is supported.
 - Legacy JS startup path was hardened too: it now boots straight into chat, with the auth screen treated as historical/optional UI only.
-- `baseUrl` is now forced to the Orbitron backend in config load/save/merge paths so the app can’t drift back to a configurable Codebuff-style backend.
+- `baseUrl` is now forced to the Orbitron backend in config load/save/merge paths so the app can't drift back to a configurable Codebuff-style backend.
 - `/key` is now legacy-only terminology; any key handling should read as optional backend configuration, not a login gate.
 - The empty-state welcome panel and top/bottom metadata bars were tightened into a more compact CLI-style layout: less repeated backend/model text, clearer command prompts, and a cleaner quick-reference panel.
 - The pinned backend is now the only surfaced path in the modern TUI; legacy config parsing may still accept old fields, but the user-facing controls no longer expose them.
 - This session: removed the user-facing `/backend` command from the command surface, renamed status/welcome copy to server-centric language, and trimmed the shortcut hints so the UI feels more like a focused CLI than a migration artefact.
+
+## Run 2026-05-08 — Backend URL update + rich welcome screen
+
+### Backend URL switched
+- All references to `https://fireworks-endpoint--57crestcrepe.replit.app` replaced with `https://orbitron--pastelsjuice8t.replit.app`
+- Files updated: `src/api/chat.ts`, `src/store/chat-store.ts`, `src/ui.js`, `src/config.js`, `src/commands.ts`, `src/protocol.js`, `orbitron.config.json`, `AGENTS.md`
+- `src/ui.js` banner text line also updated (was missed in first pass)
+
+### Rich welcome screen (banner.js → ui.js)
+- Replaced the simple 4-line `banner()` with a full Codebuff CLI-style welcome screen
+- ASCII art "Orbitron" logo inside a box-drawing frame (╔═╗ style)
+- Live connection health dot: green ● = ok, red ● = error, gray ○ = unknown + latency ms
+- Model info line: model name, temperature, max tokens
+- Git branch + dirty/clean status icon (if in a git repo)
+- Current working directory folder name
+- Quick Reference table with 4 rows of key → action pairs, each key shown as cyan inverse badge
+- "Ready — type your first message" prompt in green
+- `banner(state)` now accepts state object so all info is live; `printIntro()` in `cli.js` passes `state`
+- Build passes clean (`npm run build` succeeds)
+
+## Run 2026-05-08 19:45 — Thinking elapsed time display
+
+### Thinking phase elapsed counter
+- Added `thinkingElapsed` state (updated every 100ms while streaming, reset on cancel)
+- Thinking indicator now shows `◐ thinking (3.2s)` instead of just `◐ thinking`
+- Elapsed time starts from streaming start timestamp; updates in the spinner animation effect
+- Reset to 0 in `cancelStreaming` callback to prevent stale values on next request
+- Much more Codebuff CLI-like: user sees exactly how long they've been waiting for the first token
+- Build passes clean (`bun run build` succeeds)

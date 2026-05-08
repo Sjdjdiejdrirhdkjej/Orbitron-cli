@@ -11,7 +11,7 @@ export interface Command {
 
 export function buildStatusReport(): string {
   const store = useChatStore.getState();
-  const server = (store.config.baseUrl || "https://fireworks-endpoint--57crestcrepe.replit.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
+  const server = (store.config.baseUrl || "https://orbitron--pastelsjuice8t.replit.app").replace(/^https?:\/\//, "").replace(/\/$/, "");
   const health =
     store.backendHealth === "ok"
       ? `connected${store.backendLatencyMs != null ? ` · ${store.backendLatencyMs}ms` : ""}`
@@ -117,7 +117,7 @@ export function getCommands(): Command[] {
       execute: () => {
         const { config, availableModels } = store;
         const model = availableModels.find((m) => m.id === config.model);
-        const server = config.baseUrl || "https://fireworks-endpoint--57crestcrepe.replit.app";
+        const server = config.baseUrl || "https://orbitron--pastelsjuice8t.replit.app";
         if (!model) {
           store.addMessage({ role: "assistant", content: `Current model: ${config.model}\nServer: ${server}` });
           return;

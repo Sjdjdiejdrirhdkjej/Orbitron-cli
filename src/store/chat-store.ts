@@ -5,7 +5,7 @@ import { encode as encodeTokens } from "gpt-tokenizer";
 import fs from "node:fs";
 import path from "node:path";
 
-export const ORBITRON_BACKEND_URL = "https://fireworks-endpoint--57crestcrepe.replit.app";
+export const ORBITRON_BACKEND_URL = "https://orbitron--pastelsjuice8t.replit.app";
 
 export interface Message {
   id: string;

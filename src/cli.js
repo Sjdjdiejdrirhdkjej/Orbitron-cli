@@ -654,7 +654,7 @@ function printBlock(title, content) {
 
 function printIntro() {
   console.clear();
-  console.log(banner());
+  console.log(banner(state));
   console.log(kleur.gray(`Backend: ${state.config.baseUrl}`));
   console.log(kleur.gray(`Model: ${state.config.model} · temp ${state.config.temperature} · max ${state.config.maxTokens}`));
   console.log(kleur.gray(`Pinned backend · direct access`));

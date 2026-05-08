@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { THEME_NAMES } from './themes.js';
 
-export const ORBITRON_BACKEND_URL = 'https://fireworks-endpoint--57crestcrepe.replit.app';
+export const ORBITRON_BACKEND_URL = 'https://orbitron--pastelsjuice8t.replit.app';
 
 export const DEFAULT_CONFIG = {
   baseUrl: ORBITRON_BACKEND_URL,

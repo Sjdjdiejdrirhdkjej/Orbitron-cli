@@ -3,13 +3,78 @@ import { renderModelsCard, renderScreen, renderSettingsCard, renderStatusCard } 
 import { renderKeyboardHelp, renderBudgetMeter } from './screens/overview.js';
 import { readPreview } from './files.js';
 
-export function banner() {
-  return [
-    kleur.cyan().bold('Orbitron'),
-    kleur.gray('Terminal chat for the pinned Orbitron backend'),
-    kleur.gray('Orbitron backend locked to fireworks-endpoint--57crestcrepe.replit.app'),
-    kleur.gray('Commands: /help /status /models /settings /clear /quit'),
-  ].join('\n');
+/**
+ * Render a rich, Codebuff CLI-style welcome screen with ASCII art,
+ * connection status, model info, and quick-reference commands.
+ */
+export function banner(state = null) {
+  const lines = [];
+
+  // ── ASCII art header ─────────────────────────────────────────────
+  const logo = [
+    '  ╔═══════════════════════════════════════╗',
+    '  ║                                       ║',
+    '  ║   ██████  ██████  ██████  ████████    ║',
+    '  ║  ██    ██ ██   ██ ██   ██ ██          ║',
+    '  ║  ██    ██ ██████  ██   ██ █████       ║',
+    '  ║  ██    ██ ██   ██ ██   ██ ██          ║',
+    '  ║   ██████  ██   ██ ██████  ██          ║',
+    '  ║                                       ║',
+    '  ╚═══════════════════════════════════════╝',
+  ];
+  for (const line of logo) {
+    lines.push(kleur.cyan(line));
+  }
+  lines.push('');
+
+  // ── Status line ──────────────────────────────────────────────────
+  const health = state?.backend?.health ?? 'unknown';
+  const dot = health === 'ok' ? kleur.green('●') : health === 'error' ? kleur.red('●') : kleur.gray('○');
+  const statusText = health === 'ok' ? 'connected' : health === 'error' ? 'disconnected' : 'connecting…';
+  const latency = state?.backend?.lastLatencyMs ? ` · ${state.backend.lastLatencyMs}ms` : '';
+  lines.push(`  ${dot}  ${kleur.gray('backend')} ${kleur.cyan(statusText)}${kleur.gray(latency)}`);
+
+  // ── Model / config info ──────────────────────────────────────────
+  const model = state?.config?.model ?? 'gpt-4.1-mini';
+  const temp = state?.config?.temperature ?? 0.2;
+  const maxTok = state?.config?.maxTokens ?? 2048;
+  lines.push(`  ${kleur.gray('model')} ${kleur.cyan(model)} ${kleur.gray('·')} ${kleur.gray('temp')} ${kleur.cyan(temp)} ${kleur.gray('·')} ${kleur.gray('max')} ${kleur.cyan(maxTok)}`);
+
+  // ── Workspace / git ──────────────────────────────────────────────
+  if (state?.gitBranch) {
+    const dirty = state.gitStatus === 'dirty';
+    const branchColor = dirty ? kleur.yellow : kleur.green;
+    const statusIcon = dirty ? kleur.red('*') : kleur.green('✓');
+    lines.push(`  ${kleur.gray('git')} ${branchColor(state.gitBranch)} ${statusIcon}`);
+  }
+  if (state?.cwd) {
+    const folder = state.cwd.split('/').filter(Boolean).pop() ?? state.cwd;
+    lines.push(`  ${kleur.gray('cwd')} ${kleur.cyan(folder)}`);
+  }
+  lines.push('');
+
+  // ── Quick reference ──────────────────────────────────────────────
+  lines.push(`  ${kleur.bold('Quick Reference')}`);
+  lines.push(`  ${kleur.gray('─'.repeat(45))}`);
+  const shortcuts = [
+    ['⏎', 'send', '↑↓', 'history'],
+    ['Tab', 'complete', '⌘P', 'commands'],
+    ['/clear', 'clear chat', '/models', 'pick model'],
+    ['/help', 'all commands', 'Esc', 'close'],
+  ];
+  for (const [k1, v1, k2, v2] of shortcuts) {
+    const left = `${kleur.cyan().inverse(` ${k1} `)} ${kleur.gray(v1)}`;
+    const right = `${kleur.cyan().inverse(` ${k2} `)} ${kleur.gray(v2)}`;
+    lines.push(`  ${left.padEnd(24)} ${right}`);
+  }
+  lines.push(`  ${kleur.gray('─'.repeat(45))}`);
+  lines.push('');
+
+  // ── Prompt ───────────────────────────────────────────────────────
+  lines.push(`  ${kleur.green('Ready')} ${kleur.gray('— type your first message')}`);
+  lines.push('');
+
+  return lines.join('\n');
 }
 
 export function renderTranscript(messages, limit = 18) {
@@ -489,4 +554,23 @@ export async function promptSessionPicker(sessions) {
     process.stdin.on('data', handler);
     draw();
   });
+}
+
+function formatSessionTime(savedAt) {
+  if (!savedAt) return 'unknown';
+  const diff = Date.now() - savedAt.getTime();
+  if (diff < 60_000) return 'just now';
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+  return savedAt.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+function truncate(str, maxLen) {
+  if (!str || str.length <= maxLen) return str;
+  return str.slice(0, maxLen - 1) + '…';
+}
+
+function estimateTokens(text) {
+  if (!text) return 0;
+  return Math.ceil(text.length / 4);
 }

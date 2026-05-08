@@ -533,6 +533,7 @@ export function ChatScreen(_props: Props) {
   const [modelCount, setModelCount] = useState(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [thinkingFrame, setThinkingFrame] = useState(0);
+  const [thinkingElapsed, setThinkingElapsed] = useState(0);
   const [tabCompletionIdx, setTabCompletionIdx] = useState(-1);
   const [isEditing, setIsEditing] = useState(false);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -700,7 +701,12 @@ export function ChatScreen(_props: Props) {
   useEffect(() => {
     if (!isStreaming) return;
     const id = setInterval(() => setThinkingFrame((f) => (f + 1) % SPINNER_FRAMES.length), SPIN_INTERVAL);
-    return () => clearInterval(id);
+    const elapsedId = setInterval(() => {
+      if (streamingStartRef.current) {
+        setThinkingElapsed((Date.now() - streamingStartRef.current) / 1000);
+      }
+    }, 100);
+    return () => { clearInterval(id); clearInterval(elapsedId); };
   }, [isStreaming]);
 
   // Cleanup throughput interval on unmount or streaming end
@@ -736,6 +742,7 @@ export function ChatScreen(_props: Props) {
     }
     setIsStreaming(false);
     setStreamingContent("");
+    setThinkingElapsed(0);
     setStatus("Ready");
   }, [setIsStreaming, setStreamingContent, setStatus]);
 
@@ -1322,7 +1329,7 @@ export function ChatScreen(_props: Props) {
               ? <StreamingMessageContent content={streamingContent} theme={theme} cursorBlink={cursorBlink} />
               : <>
                 <text style={{ fg: theme.primary }}>{SPINNER_FRAMES[thinkingFrame]}</text>
-                <text style={{ fg: theme.muted }}> thinking</text>
+                <text style={{ fg: theme.muted }}> thinking{thinkingElapsed > 0 ? ` (${thinkingElapsed.toFixed(1)}s)` : ""}</text>
               </>
             }
           </box>
