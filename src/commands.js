@@ -17,7 +17,7 @@ import { truncate, colourLine } from './components/text.js';
  * Returns { ok, latencyMs, error }.
  */
 export async function pingBackend(baseUrl) {
-  const url = resolveApiUrl(baseUrl, '/api/models');
+  const url = resolveApiUrl(baseUrl, '/v1/models');
   const started = Date.now();
   try {
     const controller = new AbortController();
@@ -232,6 +232,18 @@ function parseArgs(command) {
 function pushAssistant(state, content) {
   state.messages.push({ role: 'assistant', content });
   state.messageTimestamps.push(Date.now());
+}
+
+function osc52Copy(text) {
+  if (!text) return false;
+  const encoded = Buffer.from(text, 'utf8').toString('base64');
+  const seq = '\x1b]52;c;' + encoded + '\x1b\\';
+  try {
+    process.stdout.write(seq);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -782,19 +794,31 @@ export async function handleSlashCommand(state, command, redraw, sessionCallback
       return { quit: false };
     }
     case 'copy': {
-      const relPath = args.join(' ').trim() || 'transcript.md';
-      const resolved = path.resolve(state.cwd, relPath);
       const content = state.messages
-        .map((m) => `**${m.role}**: ${m.content}`)
+        .map((m) => '### ' + m.role + '  \n' + m.content)
         .join('\n\n');
-      try {
-        fs.writeFileSync(resolved, content, 'utf8');
-        pushAssistant(state, `Transcript saved to ${relPath}. Use a clipboard tool to copy it from there.`);
-      } catch (err) {
-        pushAssistant(state, `Copy failed: ${err.message}`);
+      if (!state.messages.length) {
+        pushAssistant(state, 'No conversation to copy.');
+        return { quit: false };
+      }
+      const header = '# Orbitron Transcript\nmodel: ' + state.config.model + '  ·  ' + new Date().toLocaleString() + '\n\n';
+      const full = header + content;
+      if (osc52Copy(full)) {
+        const len = full.length;
+        pushAssistant(state, 'Copied ' + state.messages.length + ' messages to clipboard (' + len.toLocaleString() + ' chars). Paste with Ctrl+V.');
+      } else {
+        const relPath = args.join(' ').trim() || 'transcript.md';
+        const resolved = path.resolve(state.cwd, relPath);
+        try {
+          fs.writeFileSync(resolved, full, 'utf8');
+          pushAssistant(state, 'Transcript saved to ' + relPath + ' (clipboard not available in this terminal).');
+        } catch (err) {
+          pushAssistant(state, 'Copy failed: ' + err.message);
+        }
       }
       return { quit: false };
     }
+
     case 'grep': {
       const q = args.join(' ').trim();
       if (!q) {

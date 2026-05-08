@@ -332,3 +332,20 @@ The TUI now exposes backend URL switching and the onboarding copy was clarified 
 - Reset to 0 in `cancelStreaming` callback to prevent stale values on next request
 - Much more Codebuff CLI-like: user sees exactly how long they've been waiting for the first token
 - Build passes clean (`bun run build` succeeds)
+
+## Run 2026-05-08 21:25 — OSC 52 clipboard + colourLine fix
+
+### OSC 52 clipboard support
+- Added `osc52Copy(text)` function in `src/commands.js` — copies text to system clipboard via OSC 52 escape sequences
+- `/copy` command now copies transcript directly to system clipboard (markdown format) in compatible terminals (iTerm2, WezTerm, Ghostty, etc.)
+- Falls back to file write (`transcript.md`) if OSC 52 is not supported in the current terminal
+- Confirms with: "Copied N messages to clipboard (X chars). Paste with Ctrl+V."
+
+### Fixed colourLine crash in components/text.js
+- `colourLine()` in `src/components/text.js` referenced `kleur` without importing it — would crash at runtime
+- Added `import kleur from 'kleur';` at the top of the file
+- `colourLine` is used by the streaming markdown renderer for syntax-highlighted code blocks (JS/TS, Python, Bash, JSON, HTML, CSS, YAML, Markdown)
+
+### Build passes clean
+- `bun run build` succeeds — CLI binary compiles to `dist/orbitron`
+- TSX build has expected zustand/gpt-tokenizer resolution warnings (those deps are for the React/OpenTUI entry only)

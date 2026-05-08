@@ -7,8 +7,8 @@ export const ORBITRON_BACKEND_URL = 'https://orbitron--pastelsjuice8t.replit.app
 
 export const DEFAULT_CONFIG = {
   baseUrl: ORBITRON_BACKEND_URL,
-  chatPath: '/api/chat',
-  modelsPath: '/api/models',
+  chatPath: '/v1/chat/completions',
+  modelsPath: '/v1/models',
   model: 'gpt-4.1-mini',
   temperature: 0.2,
   maxTokens: 2048,

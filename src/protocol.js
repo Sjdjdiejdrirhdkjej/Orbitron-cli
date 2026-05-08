@@ -23,7 +23,7 @@ export function normaliseMessages(messages) {
 }
 
 export async function fetchModels(baseUrl, signal) {
-  const res = await fetch(resolveApiUrl(baseUrl, '/api/models'), {
+  const res = await fetch(resolveApiUrl(baseUrl, '/v1/models'), {
     signal,
     headers: { accept: 'application/json' },
   });
@@ -64,7 +64,7 @@ class AbortError extends Error {
 export async function* streamChatCompletion({ baseUrl, apiKey, modelID, messages, temperature = 0.2, maxTokens = 2048, retries = 3, signal }) {
   const model = String(modelID ?? '').trim();
   const filtered = normaliseMessages(messages);
-  if (!model) throw new Error('modelID is required');
+  if (!model) throw new Error('model is required');
   if (filtered.length === 0) throw new Error('messages is required');
 
   const maxAttempts = Math.max(1, retries) + 1;
@@ -82,7 +82,7 @@ export async function* streamChatCompletion({ baseUrl, apiKey, modelID, messages
     if (signal) signal.addEventListener('abort', linkedAbort);
 
     try {
-      const res = await fetch(resolveApiUrl(baseUrl, '/api/chat'), {
+      const res = await fetch(resolveApiUrl(baseUrl, '/v1/chat/completions'), {
         method: 'POST',
         signal: controller.signal,
         headers: {
@@ -91,7 +91,7 @@ export async function* streamChatCompletion({ baseUrl, apiKey, modelID, messages
           ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
         },
         body: JSON.stringify({
-          modelID: model,
+          model: model,
           messages: filtered,
           temperature,
           max_tokens: maxTokens,
@@ -167,7 +167,7 @@ export async function* streamChatCompletion({ baseUrl, apiKey, modelID, messages
 export async function createChatCompletion({ baseUrl, apiKey, modelID, messages, temperature = 0.2, maxTokens = 2048, retries = 3, signal }) {
   const model = String(modelID ?? '').trim();
   const filtered = normaliseMessages(messages);
-  if (!model) throw new Error('modelID is required');
+  if (!model) throw new Error('model is required');
   if (filtered.length === 0) throw new Error('messages is required');
 
   const maxAttempts = Math.max(1, retries) + 1;
@@ -185,7 +185,7 @@ export async function createChatCompletion({ baseUrl, apiKey, modelID, messages,
     if (signal) signal.addEventListener('abort', linkedAbort);
 
     try {
-      const res = await fetch(resolveApiUrl(baseUrl, '/api/chat'), {
+      const res = await fetch(resolveApiUrl(baseUrl, '/v1/chat/completions'), {
         method: 'POST',
         signal: controller.signal,
         headers: {
@@ -194,7 +194,7 @@ export async function createChatCompletion({ baseUrl, apiKey, modelID, messages,
           ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
         },
         body: JSON.stringify({
-          modelID: model,
+          model: model,
           messages: filtered,
           temperature,
           max_tokens: maxTokens,

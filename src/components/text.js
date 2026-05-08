@@ -1,3 +1,5 @@
+import kleur from 'kleur';
+
 export function truncate(text, width) {
   const str = String(text ?? '');
   if (width <= 0) return '';

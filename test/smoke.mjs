@@ -15,7 +15,7 @@ process.env.ORBITRON_CONFIG_PATH = configPath;
 
 const config = loadConfig({ cwd: tmp });
 assert.equal(config.baseUrl, DEFAULT_CONFIG.baseUrl);
-assert.equal(config.chatPath, '/api/chat');
+assert.equal(config.chatPath, '/v1/chat/completions');
 assert.equal(parseConfigValue('autosave', 'true'), true);
 assert.equal(parseConfigValue('temperature', '0.7'), 0.7);
 assert.equal(parseConfigValue('baseUrl', 'https://example.com/'), 'https://orbitron--pastelsjuice8t.replit.app');
@@ -103,7 +103,7 @@ assert.equal(stageCalls[1].overrides.temperature, 0.2);
 
 const merged = mergeConfig({ baseUrl: 'https://orbitron--pastelsjuice8t.replit.app///', modelsPath: 'api/models' });
 assert.equal(merged.baseUrl, 'https://orbitron--pastelsjuice8t.replit.app');
-assert.equal(merged.modelsPath, '/api/models');
+assert.equal(merged.modelsPath, '/v1/models');
 
 // Verify: empty env vars do not override a saved API key
 const savedWithKey = saveConfig({ ...merged, apiKey: 'saved-key-value', configPath });

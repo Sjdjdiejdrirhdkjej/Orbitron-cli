@@ -32,7 +32,7 @@ function normaliseMessages(messages: ChatMessage[] | undefined): ChatMessage[] {
 }
 
 export async function listModels(baseUrl: string): Promise<ModelInfo[]> {
-  const res = await fetch(resolveApiUrl(baseUrl, "/api/models"), {
+  const res = await fetch(resolveApiUrl(baseUrl, "/v1/models"), {
     headers: { accept: "application/json" },
   });
   if (!res.ok) throw new Error(`Model fetch failed (${res.status})`);
@@ -72,7 +72,7 @@ export async function* streamChat({
     throw new Error("messages are required");
   }
 
-  const res = await fetch(resolveApiUrl(baseUrl, "/api/chat"), {
+  const res = await fetch(resolveApiUrl(baseUrl, "/v1/chat/completions"), {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -80,7 +80,7 @@ export async function* streamChat({
       ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}),
     },
     body: JSON.stringify({
-      modelID: model,
+      model: model,
       messages: filtered,
       temperature,
       max_tokens: maxTokens,

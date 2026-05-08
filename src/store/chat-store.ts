@@ -295,7 +295,7 @@ export const useChatStore = create<ChatState>()(
     checkHealth: () => {
       const { baseUrl } = get().config;
       const start = Date.now();
-      fetch(baseUrl + "/api/models", {
+      fetch(baseUrl + "/v1/models", {
         signal: AbortSignal.timeout(5000),
         headers: { accept: "application/json" },
       })
