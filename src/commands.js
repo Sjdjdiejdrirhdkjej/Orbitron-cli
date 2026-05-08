@@ -1357,7 +1357,7 @@ export async function handleSlashCommand(state, command, redraw, sessionCallback
 }
 
 export async function sendPrompt(state, prompt, options = {}) {
-  const writeToken = typeof options === 'function' ? options : options.writeToken;
+  let writeToken = typeof options === 'function' ? options : options.writeToken;
   const accumulateToPartial = typeof options === 'function' ? null : options.accumulateToPartial;
   const scheduleRedraw = typeof options === 'function' ? null : options.redraw;
 

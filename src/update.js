@@ -1,7 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
-import { logMessage } from './logger.js';
+
+function logMessage(msg) {
+  console.log(`[orbitron] ${msg}`);
+}
 
 export const PACKAGE_NAME = 'orbitron-tui';
 const PACKAGE_JSON_PATH = new URL('../package.json', import.meta.url);
