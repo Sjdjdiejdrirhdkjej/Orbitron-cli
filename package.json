@@ -6,12 +6,12 @@
   "main": "dist/main.js",
   "types": "dist/main.d.ts",
   "bin": {
-    "orbitron": "bin/orbitron",
-    "ob": "bin/ob"
+    "orbitron": "bin/orbitron.mjs",
+    "ob": "bin/ob.mjs"
   },
   "scripts": {
-    "build": "bun build --compile src/cli.js --outfile dist/orbitron && echo '#!/bin/sh\\nexec \"$(dirname \"$0\")/../dist/orbitron\" \"$@\"' > bin/orbitron && chmod +x bin/orbitron && cp bin/orbitron bin/ob && bun build src/main.tsx --outdir dist --target bun || true",
-    "start": "bun run bin/orbitron",
+    "build": "bun build --compile src/cli.js --outfile dist/orbitron && node -e \"const fs=require('fs');const wrapper=['#!/usr/bin/env node','import path from \\\"node:path\\\";','import { spawnSync } from \\\"node:child_process\\\";','const bin = path.join(import.meta.dirname, \\\"..\\\", \\\"dist\\\", \\\"orbitron\\\");','const result = spawnSync(bin, process.argv.slice(2), { stdio: \\\"inherit\\\" });','process.exit(result.status ?? 0);',''].join(\\\"\\n\\\");fs.writeFileSync('bin/orbitron.mjs',wrapper);fs.chmodSync('bin/orbitron.mjs',0o755);fs.copyFileSync('bin/orbitron.mjs','bin/ob.mjs');\" && bun build src/main.tsx --outdir dist --target bun || true",
+    "start": "bun run bin/orbitron.mjs",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepublishOnly": "npm run build"
   },

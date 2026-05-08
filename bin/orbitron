@@ -1,2 +1,6 @@
-#!/bin/sh
-exec "$(dirname "$0")/../dist/orbitron" "$@"
+#!/usr/bin/env node
+const path=require("path");
+const {spawnSync}=require("child_process");
+const bin=path.join(__dirname,"..","dist","orbitron");
+const result=spawnSync(bin,process.argv.slice(2),{stdio:"inherit"});
+process.exit(result.status ?? 0);
