@@ -18,7 +18,7 @@ assert.equal(config.baseUrl, DEFAULT_CONFIG.baseUrl);
 assert.equal(config.chatPath, '/v1/chat/completions');
 assert.equal(parseConfigValue('autosave', 'true'), true);
 assert.equal(parseConfigValue('temperature', '0.7'), 0.7);
-assert.equal(parseConfigValue('baseUrl', 'https://example.com/'), 'https://fireworks-endpoint--57crestcrepe.replit.app');
+assert.equal(parseConfigValue('baseUrl', 'https://example.com/'), 'https://orbitron--pastelsjuice8t.replit.app');
 assert.equal(parseConfigValue('modelsPath', 'models'), '/models');
 
 const savedPath = saveConfig({ ...config, model: 'test-model', configPath });
@@ -101,8 +101,8 @@ assert.equal(stageCalls.length, 2);
 assert.equal(stageCalls[0].overrides.temperature, 0.1);
 assert.equal(stageCalls[1].overrides.temperature, 0.2);
 
-const merged = mergeConfig({ baseUrl: 'https://fireworks-endpoint--57crestcrepe.replit.app///', modelsPath: 'api/models' });
-assert.equal(merged.baseUrl, 'https://fireworks-endpoint--57crestcrepe.replit.app');
+const merged = mergeConfig({ baseUrl: 'https://orbitron--pastelsjuice8t.replit.app///', modelsPath: 'api/models' });
+assert.equal(merged.baseUrl, 'https://orbitron--pastelsjuice8t.replit.app');
 assert.equal(merged.modelsPath, '/api/models');
 
 // Verify: empty env vars do not override a saved API key

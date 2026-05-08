@@ -951,23 +951,19 @@ export function ChatScreen(_props: Props) {
     setInputHistoryIndex(-1);
     setCursorPos(0);
 
-    const snapshotMessages = [
-      ...messages,
-      { id: currentUserMessage, role: "user" as const, content: text, timestamp: Date.now() },
-    ];
-    void startNormalChat(snapshotMessages);
+    void startNormalChat(messages);
   }, [input, isStreaming, messages, addMessage, addToInputHistory, setInputHistoryIndex, setConversationInfo, setIsStreaming, setStreamingContent, setLastError, setStatus, startNormalChat]);
 
   useKeyboard(
     useCallback(
       (key: { name: string; ctrl: boolean; meta: boolean; shift: boolean; sequence: string; preventDefault?: () => void }) => {
-        if ((key.name === "return" || key.name === "enter") && !key.ctrl && !key.meta && !key.shift && !isStreaming && input.trim()) {
+        if ((key.name === "return" || key.name === "enter" || key.sequence === "\r") && !key.ctrl && !key.meta && !key.shift && !isStreaming && input.trim()) {
           key.preventDefault?.();
           void handleSubmit();
           return;
         }
         // Shift+Enter inserts a newline (multi-line input)
-        if ((key.name === "return" || key.name === "enter") && key.shift && !isStreaming) {
+        if ((key.name === "return" || key.name === "enter" || key.sequence === "\r") && key.shift && !isStreaming) {
           key.preventDefault?.();
           setInputHistoryIndex(-1);
           setInput((prev) => prev.slice(0, cursorPos) + "\n" + prev.slice(cursorPos));
@@ -1211,7 +1207,7 @@ export function ChatScreen(_props: Props) {
           return;
         }
         const seq = key.sequence || key.name;
-        if (seq && seq.length === 1 && !key.ctrl && !key.meta) {
+        if (seq && seq.length === 1 && !key.ctrl && !key.meta && seq !== "\r" && seq !== "\n") {
           setInputHistoryIndex(-1);
           setInput((prev) => prev.slice(0, cursorPos) + seq + prev.slice(cursorPos));
           setCursorPos((p) => p + 1);
