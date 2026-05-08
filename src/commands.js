@@ -1085,6 +1085,13 @@ export async function handleSlashCommand(state, command, redraw, sessionCallback
       redraw();
       return { quit: false };
     }
+    case 'direct': {
+      state.config.direct = !state.config.direct;
+      pushAssistant(state, state.config.direct
+        ? 'Direct mode on — skipping orchestration for faster responses.'
+        : 'Orchestration mode on — discover + think stages before answering.');
+      return { quit: false };
+    }
     case 'expand': {
       if (!state.lastResponseDiff) {
         pushAssistant(state, 'No model result block to expand. Result blocks appear after thinking sections in chain-of-thought responses.');
@@ -1740,6 +1747,7 @@ export const SLASH_COMMANDS = [
   { name: '/copy', description: 'Copy transcript (alias for /export)' },
   { name: '/sessions', description: 'Browse and restore saved sessions' },
   { name: '/think', description: 'Toggle reasoning display before answer' },
+  { name: '/direct', description: 'Toggle direct mode — skip orchestration for faster responses' },
   { name: '/compact', description: 'Toggle compact single-column layout (also: /c)' },
   { name: '/c', description: 'Alias for /compact — toggle compact layout' },
   { name: '/set', description: 'Update a config field: /set <field> <value>' },
@@ -1763,7 +1771,7 @@ export const COMMAND_COMPLETIONS = [
   '/help', '/models', '/settings', '/status', '/search', '/clear', '/quit',
   '/set', '/model', '/mode', '/include', '/exclude', '/export', '/copy',
   '/theme', '/context', '/files', '/write', '/append', '/run', '/sessions', '/save',
-  '/compact', '/c', '/retry', '/explain', '/grep', '/expand', '/collapse', '/commit', '/diff',
+  '/compact', '/c', '/direct', '/retry', '/explain', '/grep', '/expand', '/collapse', '/commit', '/diff',
 ];
 
 export const CONFIG_FIELD_COMPLETIONS = [

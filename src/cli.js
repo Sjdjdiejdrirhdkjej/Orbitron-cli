@@ -104,6 +104,7 @@ program
   .option('--temperature <number>', 'override temperature for this run')
   .option('--max-tokens <number>', 'override max tokens for this run')
   .option('--retries <number>', 'override retries for this run')
+  .option('--direct', 'skip orchestration, send direct to model')
   .parse(process.argv);
 
 const opts = program.opts();
@@ -121,6 +122,7 @@ state.config = {
   temperature: opts.temperature !== undefined ? parseConfigValue('temperature', opts.temperature) : state.config.temperature,
   maxTokens: opts.maxTokens !== undefined ? parseConfigValue('maxTokens', opts.maxTokens) : state.config.maxTokens,
   retries: opts.retries !== undefined ? parseConfigValue('retries', opts.retries) : state.config.retries ?? DEFAULT_CONFIG.retries,
+  direct: opts.direct ? true : state.config.direct,
 };
 
 const client = new BackendClient(state.config);
@@ -845,19 +847,40 @@ async function sendMessage(text) {
   process.on('SIGINT', abortHandler, { once: true });
 
   try {
-    const orchestration = await runOrchestratedReply({
-      state,
-      client,
-      signal: controller.signal,
-      redraw: redrawScreen,
-      onStage: logStage,
-    });
+    let reviewMessages;
 
-    process.stdout.write(kleur.green('\nAssistant: '));
-    state.status = orchestration.reviewStatus;
+    if (state.config.direct) {
+      state.status = 'streaming';
+      state.orchestrator.active = false;
+      state.orchestrator.currentRole = '';
+      state.orchestrator.currentDetail = '';
+      reviewMessages = state.messages.map(m => ({ role: m.role, content: m.content }));
+    } else {
+      const orchestration = await runOrchestratedReply({
+        state,
+        client,
+        signal: controller.signal,
+        redraw: redrawScreen,
+        onStage: logStage,
+      });
+      state.status = orchestration.reviewStatus;
+      reviewMessages = orchestration.reviewMessages;
+    }
+
     redrawScreen();
+    process.stdout.write(kleur.green('\nAssistant: '));
+    state.backend.lastLatencyMs = Math.round(Date.now() - started);
+    state.lastError = '';
+    state.lastOutputTokens = 0;
+    state.lastReplyDurationMs = Date.now() - started;
+    state.lastReplyTpm = 0;
+    state.lastReplyCost = 0;
+    state.lastResponseDiff = null;
+    state.diffExpanded = false;
+    state.lastResponseThink = null;
+    state.thinkExpanded = false;
 
-    for await (const token of client.streamChat(orchestration.reviewMessages, {
+    for await (const token of client.streamChat(reviewMessages, {
       temperature: state.config.temperature,
       maxTokens: state.config.maxTokens,
       retries: state.config.retries,

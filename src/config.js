@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { THEME_NAMES } from './themes.js';
 
-export const ORBITRON_BACKEND_URL = 'https://fireworks-endpoint--57crestcrepe.replit.app';
+export const ORBITRON_BACKEND_URL = 'https://orbitron--pastelsjuice8t.replit.app';
 
 export const DEFAULT_CONFIG = {
   baseUrl: ORBITRON_BACKEND_URL,
@@ -17,6 +17,7 @@ export const DEFAULT_CONFIG = {
   systemPrompt: 'You are a concise, practical coding assistant for a terminal workflow.',
   autosave: true,
   theme: 'default',
+  direct: false,
 };
 
 const CONFIG_KEYS = new Set([
@@ -31,6 +32,7 @@ const CONFIG_KEYS = new Set([
   'systemPrompt',
   'autosave',
   'theme',
+  'direct',
 ]);
 
 export function resolveConfigPath({ explicitPath = '', cwd = process.cwd() } = {}) {
@@ -132,6 +134,7 @@ export function mergeConfig(partial = {}) {
     systemPrompt: trimString(base.systemPrompt, DEFAULT_CONFIG.systemPrompt),
     autosave: cleanBoolean(base.autosave, DEFAULT_CONFIG.autosave),
     theme: THEME_NAMES.includes(base.theme) ? base.theme : DEFAULT_CONFIG.theme,
+    direct: cleanBoolean(base.direct, DEFAULT_CONFIG.direct),
     configPath: typeof base.configPath === 'string' && base.configPath.trim() ? path.resolve(base.configPath) : undefined,
   };
 }
@@ -176,6 +179,7 @@ export function saveConfig(config) {
         systemPrompt: merged.systemPrompt,
         autosave: merged.autosave,
         theme: merged.theme,
+        direct: merged.direct,
       },
       null,
       2,
@@ -213,6 +217,8 @@ export function parseConfigValue(key, rawValue) {
       const allowed = THEME_NAMES;
       return allowed.includes(value) ? value : 'default';
     }
+    case 'direct':
+      return cleanBoolean(value, DEFAULT_CONFIG.direct);
     default:
       return value;
   }

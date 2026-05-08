@@ -2,7 +2,7 @@
 
 - **Stack**: Bun + OpenTUI (@opentui/react + @opentui/core) + React 19 + TypeScript
 - **Entry**: `bun run src/main.tsx` or `orbitron` (bin script)
-- **Backend**: `https://fireworks-endpoint--57crestcrepe.replit.app` — OpenAI-compatible `/api/chat` + `/api/models`
+- **Backend**: `https://orbitron--pastelsjuice8t.replit.app` — OpenAI-compatible `/api/chat` + `/api/models`
 
 ## Architecture
 
@@ -296,7 +296,7 @@ The TUI now exposes backend URL switching and the onboarding copy was clarified 
 
 - Launch screen now treats API key entry as optional and shows backend health/latency up front.
 - Command text has been tightened to Orbitron-specific wording so the app reads as a backend-connected TUI, not a Codebuff fork.
-- Backend remains pinned to `https://fireworks-endpoint--57crestcrepe.replit.app`; `/backend` is now compatibility-only and points users to `/status` and `/models` rather than implying switching is supported.
+- Backend remains pinned to `https://orbitron--pastelsjuice8t.replit.app`; `/backend` is now compatibility-only and points users to `/status` and `/models` rather than implying switching is supported.
 - Legacy JS startup path was hardened too: it now boots straight into chat, with the auth screen treated as historical/optional UI only.
 - `baseUrl` is now forced to the Orbitron backend in config load/save/merge paths so the app can't drift back to a configurable Codebuff-style backend.
 - `/key` is now legacy-only terminology; any key handling should read as optional backend configuration, not a login gate.
@@ -307,7 +307,7 @@ The TUI now exposes backend URL switching and the onboarding copy was clarified 
 ## Run 2026-05-08 — Backend URL update + rich welcome screen
 
 ### Backend URL switched
-- All references to `https://fireworks-endpoint--57crestcrepe.replit.app` replaced with `https://fireworks-endpoint--57crestcrepe.replit.app`
+- All references to `https://orbitron--pastelsjuice8t.replit.app` replaced with `https://orbitron--pastelsjuice8t.replit.app`
 - Files updated: `src/api/chat.ts`, `src/store/chat-store.ts`, `src/ui.js`, `src/config.js`, `src/commands.ts`, `src/protocol.js`, `orbitron.config.json`, `AGENTS.md`
 - `src/ui.js` banner text line also updated (was missed in first pass)
 
@@ -367,3 +367,24 @@ The TUI now exposes backend URL switching and the onboarding copy was clarified 
 
 ### Build passes clean
 - `bun run build` succeeds — CLI binary compiles to `dist/orbitron`
+
+## Run 2026-05-08 23:45 — Fixed stale backend URL + Direct mode
+
+### Backend URL fix
+- `src/config.js` still had `ORBITRON_BACKEND_URL` pointing to the old `fireworks-endpoint--57crestcrepe.replit.app` — fixed to `https://orbitron--pastelsjuice8t.replit.app`
+- This was the root cause of some silent config drift
+
+### Direct / fast mode
+- Added `direct` field to config (default `false`) — when enabled, orchestration (discover + think stages) is skipped and messages go straight to the model
+- Toggle with `/direct` command in-chat
+- Enable with `--direct` CLI flag: `orbitron --direct`
+- Set `ORBITRON_DIRECT=true` env var to default to fast mode
+- Cuts response latency by removing 2 full LLM roundtrips before streaming starts
+- In `sendMessage()`: when `state.config.direct` is true, bypasses `runOrchestratedReply()` entirely and passes messages directly to `client.streamChat()`
+- Added to `SLASH_COMMANDS`, `COMMAND_COMPLETIONS`, `CONFIG_KEYS`, `DEFAULT_CONFIG`, `mergeConfig`, `loadConfig`, `saveConfig`, `parseConfigValue`
+
+### Files changed
+- `src/config.js` — fixed ORBITRON_BACKEND_URL, added `direct` throughout
+- `src/cli.js` — added `--direct` CLI option, config override, direct-mode bypass in `sendMessage()`
+- `src/commands.js` — added `/direct` case handler + SLASH_COMMANDS + COMMAND_COMPLETIONS entries
+- Build passes clean (`bun run build` succeeds)
