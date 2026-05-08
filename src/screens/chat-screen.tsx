@@ -21,6 +21,9 @@ import type { Message } from "../store/chat-store";
 import { getDisplayName } from "../lib/model-names";
 import { encode as encodeTokens } from "gpt-tokenizer";
 import { handleRunCode } from "../lib/execute";
+import { SlashSuggestions } from "../components/slash-suggestions";
+import { ThemePicker } from "../components/theme-picker";
+import { SLASH_COMMANDS, matchSlashCommand, getSlashCommandHint } from "../lib/commands";
 
 function getTerminalColumns(): number {
   try {
@@ -505,7 +508,11 @@ function findLastUserMessage(messages: Message[]): Message | null {
 interface Props {}
 
 export function ChatScreen(_props: Props) {
-  const theme = getTheme("dark");
+  const currentTheme = useChatStore((s) => s.currentTheme);
+  const setTheme = useChatStore((s) => s.setTheme);
+  const showThemePicker = useChatStore((s) => s.showThemePicker);
+  const setShowThemePicker = useChatStore((s) => s.setShowThemePicker);
+  const theme = getTheme(currentTheme);
   const config = useChatStore((s) => s.config);
   const messages = useChatStore((s) => s.messages);
   const addMessage = useChatStore((s) => s.addMessage);
@@ -563,7 +570,9 @@ export function ChatScreen(_props: Props) {
   const [offlineMode, setOfflineMode] = useState(false);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const consecutiveErrorsRef = useRef(0);
-  const commandHint = getCommandHint(input);
+  const commandHint = getSlashCommandHint(input);
+  const [showSlashSuggestions, setShowSlashSuggestions] = useState(false);
+  const [slashQuery, setSlashQuery] = useState("");
 
   const startNormalChat = useCallback(async (snapshotMessages: Message[]) => {
     const abortController = new AbortController();
@@ -690,13 +699,17 @@ export function ChatScreen(_props: Props) {
     return () => clearInterval(id);
   }, [isStreaming]);
 
-  // Auto-show palette when input starts with /
+  // Show slash suggestions when input starts with /
   useEffect(() => {
-    if (input.startsWith("/") && input.length > 1 && !showPalette) {
-      setShowPalette(true);
+    if (input.startsWith("/") && !isStreaming && !showPalette) {
+      const query = input.slice(1).split(/\s/)[0];
+      setSlashQuery(query);
+      setShowSlashSuggestions(true);
+    } else {
+      setShowSlashSuggestions(false);
+      setSlashQuery("");
     }
-  }, [input, showPalette]);
-
+  }, [input, isStreaming, showPalette]);
   // Spinner animation for thinking state
   useEffect(() => {
     if (!isStreaming) return;

@@ -51,6 +51,12 @@ interface ChatState {
   setConfig: (partial: Partial<Config>) => void;
   setConversationInfo: (title: string, createdAt: number) => void;
 
+  // Theme
+  currentTheme: string;
+  setTheme: (name: string) => void;
+  showThemePicker: boolean;
+  setShowThemePicker: (v: boolean) => void;
+
   // Screen
   screen: AppScreen;
   setScreen: (screen: AppScreen) => void;
@@ -197,6 +203,17 @@ export const useChatStore = create<ChatState>()(
     setScreen: (screen) =>
       set((s) => {
         s.screen = screen;
+      }),
+
+    currentTheme: "dark",
+    setTheme: (name) =>
+      set((s) => {
+        s.currentTheme = name;
+      }),
+    showThemePicker: false,
+    setShowThemePicker: (v) =>
+      set((s) => {
+        s.showThemePicker = v;
       }),
 
     messages: [],
