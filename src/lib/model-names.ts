@@ -6,6 +6,7 @@ const ALIASES: Record<string, string> = {
   "gpt-4-turbo": "GPT-4 Turbo",
   "gpt-4": "GPT-4",
   "gpt-3.5-turbo": "GPT-3.5 Turbo",
+  "gpt-5.4": "GPT-5.4",
   "o1": "o1",
   "o1-mini": "o1 Mini",
   "o1-pro": "o1 Pro",
@@ -22,6 +23,7 @@ const ALIASES: Record<string, string> = {
   "gemini-1.5-flash": "Gemini 1.5 Flash",
   "gemini-1.5-pro": "Gemini 1.5 Pro",
   "gemini-1.5-flash-8b": "Gemini 1.5 Flash 8B",
+  "gemini-3.1-flash-lite": "Gemini 3.1 Flash Lite",
   "llama-4-scout-17b-16e-instruct": "Llama 4 Scout",
   "llama-4-maverick-17b-16e-instruct": "Llama 4 Maverick",
   "llama-4-lean-17b-16e-instruct": "Llama 4 Lean",
@@ -40,6 +42,7 @@ const ALIASES: Record<string, string> = {
   "codellama-34b-instruct": "Code Llama 34B",
   "deepseek-chat": "DeepSeek Chat",
   "deepseek-coder": "DeepSeek Coder",
+  "deepseek-v4-pro": "DeepSeek V4 Pro",
   "qwen-72b-chat": "Qwen 72B",
   "qwen-14b-chat": "Qwen 14B",
   "qwen-7b-chat": "Qwen 7B",
@@ -60,6 +63,7 @@ const ALIASES: Record<string, string> = {
   "gemma-4-1b-it": "Gemma 4 1B",
   "gemma-sent-7b-it": "Gemma Sent 7B",
   "gemma-sent-1b-it": "Gemma Sent 1B",
+  "kimi-k2.6": "Kimi K2.6",
 };
 
 // Extract a short base name from a model ID string

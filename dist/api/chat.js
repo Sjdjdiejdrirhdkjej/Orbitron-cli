@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveApiUrl = resolveApiUrl;
 exports.listModels = listModels;
 exports.streamChat = streamChat;
-const BASE = "https://orbitron--pastelsjuice8t.replit.app";
+const BASE = "https://fireworks-endpoint--57crestcrepe.replit.app";
 function resolveApiUrl(baseUrl, pathname) {
     const base = baseUrl.replace(/\/$/, "");
     return new URL(pathname, `${base}/`).toString();

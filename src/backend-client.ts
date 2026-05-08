@@ -21,7 +21,7 @@ export async function initializeBackendClient() {
   }
 }
 
-export async function sendMessageToBackend(content: string) {
+export async function sendMessageToBackend(content: string, modelOverride?: string) {
   const store = useChatStore.getState();
   const { baseUrl, apiKey, model, temperature, maxTokens } = store.config;
   
@@ -40,7 +40,7 @@ export async function sendMessageToBackend(content: string) {
     const stream = streamChat({
       baseUrl,
       apiKey,
-      model,
+      model: modelOverride ?? model,
       messages,
       temperature,
       maxTokens,

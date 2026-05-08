@@ -79,6 +79,10 @@ export async function runOrchestratedReply({
   const retries = state.config?.retries;
   const completedRoles = [];
 
+  const discoverModel = process.env.ORBITRON_DISCOVER_MODEL || 'deepseek-v4-pro';
+  const thinkModel = process.env.ORBITRON_THINK_MODEL || 'gpt-5.4';
+  const reviewModel = process.env.ORBITRON_REVIEW_MODEL || 'kimi-k2.6';
+
   const announce = (role, detail) => {
     updateStage(state, role, detail, completedRoles);
     onStage?.(state.orchestrator);
@@ -90,7 +94,7 @@ export async function runOrchestratedReply({
   state.typingDots = 0;
   const discoverResult = await client.sendChat(
     buildStageMessages(state.messages, DISCOVER_INSTRUCTIONS),
-    { model, temperature: 0.1, maxTokens: 256, retries },
+    { model: discoverModel, temperature: 0.1, maxTokens: 256, retries },
     signal,
   );
   const discoverText = toText(client, discoverResult);
@@ -102,7 +106,7 @@ export async function runOrchestratedReply({
     buildStageMessages(state.messages, THINK_INSTRUCTIONS, [
       { role: 'system', content: `Discover notes:\n${discoverText || '(none)'}` },
     ]),
-    { model, temperature: 0.2, maxTokens: 384, retries },
+    { model: thinkModel, temperature: 0.2, maxTokens: 384, retries },
     signal,
   );
   const thinkText = toText(client, thinkResult);
@@ -123,6 +127,6 @@ export async function runOrchestratedReply({
     reviewMessages,
     completedRoles: [...completedRoles],
     reviewStatus: formatStageStatus('review', 'streaming the answer'),
-    reviewModel: model,
+    reviewModel,
   };
 }

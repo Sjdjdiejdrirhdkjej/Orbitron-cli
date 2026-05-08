@@ -1,5 +1,5 @@
 /**
- * Token counter that mirrors Codebuff's approach:
+ * Token counter for Orbitron TUI.
  * - gpt-tokenizer for GPT token counts
  * - 1.35× Anthropic fudge factor for Claude messages
  * - LRU cache to avoid recounting the same strings

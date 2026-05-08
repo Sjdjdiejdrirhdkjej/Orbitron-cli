@@ -1,5 +1,5 @@
 /**
- * Message trimmer mirroring Codebuff's trimMessagesToFitLimit algorithm.
+ * Message trimmer — trimMessagesToFitLimit algorithm.
  * Key differences from the old autoPrune:
  * - Binary search for the optimal batch size (fast, O(log n))
  * - Always preserves system message + last 5 exchanges

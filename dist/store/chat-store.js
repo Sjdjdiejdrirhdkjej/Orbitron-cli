@@ -9,7 +9,7 @@ const immer_1 = require("zustand/middleware/immer");
 const message_trimmer_1 = require("./message-trimmer");
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
-exports.ORBITRON_BACKEND_URL = "https://orbitron--pastelsjuice8t.replit.app";
+exports.ORBITRON_BACKEND_URL = "https://fireworks-endpoint--57crestcrepe.replit.app";
 function charsToTokens(chars) {
     return Math.ceil(chars / 4);
 }

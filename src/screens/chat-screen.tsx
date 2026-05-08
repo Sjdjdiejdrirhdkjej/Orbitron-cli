@@ -558,6 +558,10 @@ export function ChatScreen(_props: Props) {
   const contextWarning = useChatStore((s) => s.contextWarning);
   const updateContextTokens = useChatStore((s) => s.updateContextTokens);
   const apiKeyMissing = false;
+  const [errorDismissed, setErrorDismissed] = useState(false);
+  const [offlineMode, setOfflineMode] = useState(false);
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const consecutiveErrorsRef = useRef(0);
   const commandHint = getCommandHint(input);
 
   const startNormalChat = useCallback(async (snapshotMessages: Message[]) => {

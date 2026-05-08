@@ -7,7 +7,7 @@ export function banner() {
   return [
     kleur.cyan().bold('Orbitron'),
     kleur.gray('Terminal chat for the pinned Orbitron backend'),
-    kleur.gray('Orbitron backend locked to orbitron--pastelsjuice8t.replit.app'),
+    kleur.gray('Orbitron backend locked to fireworks-endpoint--57crestcrepe.replit.app'),
     kleur.gray('Commands: /help /status /models /settings /clear /quit'),
   ].join('\n');
 }
