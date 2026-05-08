@@ -103,7 +103,7 @@ assert.equal(stageCalls[1].overrides.temperature, 0.2);
 
 const merged = mergeConfig({ baseUrl: 'https://orbitron--pastelsjuice8t.replit.app///', modelsPath: 'api/models' });
 assert.equal(merged.baseUrl, 'https://orbitron--pastelsjuice8t.replit.app');
-assert.equal(merged.modelsPath, '/v1/models');
+assert.equal(merged.modelsPath, '/api/models');
 
 // Verify: empty env vars do not override a saved API key
 const savedWithKey = saveConfig({ ...merged, apiKey: 'saved-key-value', configPath });
