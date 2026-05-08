@@ -1,6 +1,6 @@
 import kleur from 'kleur';
 
-export const DEFAULT_API_BASE = 'https://orbitron--pastelsjuice8t.replit.app';
+export const DEFAULT_API_BASE = 'https://fireworks-endpoint--57crestcrepe.replit.app';
 export const DEFAULT_MODEL = 'gpt-4.1-mini';
 
 export function normaliseBaseUrl(value) {

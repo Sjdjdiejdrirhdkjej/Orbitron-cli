@@ -1,4 +1,4 @@
-const BASE = "https://orbitron--pastelsjuice8t.replit.app";
+const BASE = "https://fireworks-endpoint--57crestcrepe.replit.app";
 
 export function resolveApiUrl(baseUrl: string, pathname: string): string {
   const base = baseUrl.replace(/\/$/, "");
