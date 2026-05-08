@@ -4,6 +4,7 @@ import { trimMessagesToFitLimit } from "./message-trimmer.js";
 import { encode as encodeTokens } from "gpt-tokenizer";
 import fs from "node:fs";
 import path from "node:path";
+import { gitBranch, gitStatus, walkWorkspace, readPreview, formatFileSize, filterFilesByQuery } from "../files.js";
 
 export const ORBITRON_BACKEND_URL = "https://orbitron--pastelsjuice8t.replit.app";
 
@@ -118,6 +119,22 @@ interface ChatState {
 
   // Search
   searchHistory: (query: string) => string;
+
+  // Workspace awareness (git + files)
+  gitBranch: string | null;
+  gitStatus: string | null;
+  workspaceFiles: WorkspaceEntry[];
+  refreshWorkspace: () => void;
+  readFileCmd: (relPath: string) => string;
+  listFilesCmd: (query?: string) => string;
+}
+
+export interface WorkspaceEntry {
+  path: string;
+  type: "file" | "dir";
+  depth: number;
+  size?: number;
+  mtimeMs?: number;
 }
 
 export interface SessionSummary {
@@ -453,6 +470,46 @@ export const useChatStore = create<ChatState>()(
         return `  [${ts}]\n  ${m.role}: ${snippet}`;
       });
       return `Found ${results.length} match${results.length !== 1 ? "es" : ""} for "${query}":\n\n${lines.join("\n\n")}`;
+    },
+
+    gitBranch: null,
+    gitStatus: null,
+    workspaceFiles: [],
+    refreshWorkspace: () => {
+      const cwd = process.cwd();
+      set((s) => {
+        try { s.gitBranch = gitBranch(cwd); } catch { s.gitBranch = null; }
+        try { s.gitStatus = gitStatus(cwd); } catch { s.gitStatus = null; }
+        try { s.workspaceFiles = walkWorkspace(cwd, { maxEntries: 2000 }); } catch { s.workspaceFiles = []; }
+      });
+    },
+    readFileCmd: (relPath: string) => {
+      try {
+        return readPreview(process.cwd(), relPath, 12000);
+      } catch (e: any) {
+        return `Error reading "${relPath}": ${e.message}`;
+      }
+    },
+    listFilesCmd: (query) => {
+      const { workspaceFiles } = get();
+      let entries = workspaceFiles;
+      if (query && query.trim()) {
+        const indices = filterFilesByQuery(entries, query.trim());
+        if (!indices) return `No files matching "${query}".`;
+        entries = indices.slice(0, 30).map((i) => entries[i]);
+      }
+      if (entries.length === 0) return "No workspace files found.";
+      const lines = entries.slice(0, 30).map((e) => {
+        const indent = "  ".repeat(e.depth);
+        const icon = e.type === "dir" ? "/" : "";
+        const name = e.path.split("/").pop() || e.path;
+        const sizeStr = e.type === "file" && (e as any)._stats?.size ? `  ${formatFileSize((e as any)._stats.size)}` : "";
+        return `${indent}${icon}${name}${sizeStr}`;
+      });
+      const total = workspaceFiles.length;
+      const shown = Math.min(entries.length, 30);
+      const suffix = entries.length > 30 ? `\n  … and ${entries.length - 30} more` : "";
+      return `Workspace files (${shown}/${total} shown):\n${lines.join("\n")}${suffix}`;
     },
   }))
 );

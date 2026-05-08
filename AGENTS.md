@@ -349,3 +349,21 @@ The TUI now exposes backend URL switching and the onboarding copy was clarified 
 ### Build passes clean
 - `bun run build` succeeds — CLI binary compiles to `dist/orbitron`
 - TSX build has expected zustand/gpt-tokenizer resolution warnings (those deps are for the React/OpenTUI entry only)
+
+## Run 2026-05-08 23:15 — Workspace awareness (git + files)
+
+### Git integration
+- `refreshWorkspace()` added to chat store — reads git branch, git status, and workspace file tree on mount
+- `gitBranch` / `gitStatus` / `workspaceFiles` state fields wired into zustand store
+- Git branch shown in status bar: `⎇ main` in green (clean) or amber (dirty `⎇ main*`)
+- `/git` command added — shows branch, clean/dirty status, and cwd
+- `files.js` utilities (`gitBranch`, `gitStatus`, `walkWorkspace`, `readPreview`, `formatFileSize`, `filterFilesByQuery`) imported and used
+
+### File commands
+- `/files [query]` — lists workspace file tree (up to 30 entries, 2000 max). Filter by name with optional query
+- `/file <path>` — reads a workspace file (up to 12KB) and displays content inline
+- Argument handlers added in `handleSubmit` for both commands
+- File entries show indented tree with directory `/` suffix and file sizes
+
+### Build passes clean
+- `bun run build` succeeds — CLI binary compiles to `dist/orbitron`

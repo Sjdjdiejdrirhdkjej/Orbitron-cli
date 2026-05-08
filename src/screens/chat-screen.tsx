@@ -534,6 +534,9 @@ export function ChatScreen(_props: Props) {
   const backendHealth = useChatStore((s) => s.backendHealth);
   const backendLatencyMs = useChatStore((s) => s.backendLatencyMs);
   const checkHealth = useChatStore((s) => s.checkHealth);
+  const refreshWorkspace = useChatStore((s) => s.refreshWorkspace);
+  const gitBranchName = useChatStore((s) => s.gitBranch);
+  const gitStatusClean = useChatStore((s) => s.gitStatus);
   const [cursorBlink, setCursorBlink] = useState(true);
   const [cursorPos, setCursorPos] = useState(0);
   const [input, setInput] = useState("");
@@ -660,6 +663,11 @@ export function ChatScreen(_props: Props) {
     const interval = setInterval(checkHealth, 30000);
     return () => clearInterval(interval);
   }, [checkHealth]);
+
+  // Refresh workspace info (git + files) on mount
+  useEffect(() => {
+    refreshWorkspace();
+  }, [refreshWorkspace]);
 
   const healthDot = backendHealth === "ok"
     ? "●"
@@ -907,6 +915,18 @@ export function ChatScreen(_props: Props) {
         }
         if (command.name === "search" && arg) {
           const result = useChatStore.getState().searchHistory(arg);
+          addMessage({ role: "assistant", content: result });
+          setInput("");
+          return;
+        }
+        if (command.name === "files" && arg) {
+          const result = useChatStore.getState().listFilesCmd(arg);
+          addMessage({ role: "assistant", content: result });
+          setInput("");
+          return;
+        }
+        if (command.name === "file" && arg) {
+          const result = useChatStore.getState().readFileCmd(arg.trim());
           addMessage({ role: "assistant", content: result });
           setInput("");
           return;
@@ -1253,7 +1273,7 @@ export function ChatScreen(_props: Props) {
               </text>
               <text style={{ fg: theme.muted }}> </text>
               <text style={{ fg: theme.foreground }}>Type a prompt, or jump in with a command:</text>
-              <text style={{ fg: theme.primary }}>/models · /sessions · /status · /search · /info</text>
+              <text style={{ fg: theme.primary }}>/models · /sessions · /status · /search · /info · /files · /git</text>
               <text style={{ fg: theme.muted }}> </text>
               <text style={{ fg: theme.border }}>┌─────────────────────────────┐</text>
               <text style={{ fg: theme.border }}>│      Quick Reference       │</text>
@@ -1446,6 +1466,14 @@ export function ChatScreen(_props: Props) {
       <box style={{ flexDirection: "row", padding: 0, flexShrink: 0, alignItems: "center" }}>
         <text style={{ fg: healthColor }}>{healthDot}</text>
         {healthLabel ? <text style={{ fg: healthColor, marginLeft: 1 }}>{healthLabel}</text> : null}
+        {gitBranchName ? (
+          <>
+            <text style={{ fg: theme.muted, marginLeft: 2 }}>⎇</text>
+            <text style={{ fg: gitStatusClean === "clean" ? theme.success : gitStatusClean === "dirty" ? theme.warning : theme.muted, marginLeft: 1 }}>
+              {gitBranchName}{gitStatusClean === "dirty" ? "*" : ""}
+            </text>
+          </>
+        ) : null}
         <text style={{ fg: theme.muted, flexGrow: 1 }} />
         <text style={{ fg: theme.muted }}>
           {commandHint

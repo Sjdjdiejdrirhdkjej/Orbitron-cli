@@ -273,6 +273,41 @@ export function getCommands(): Command[] {
         });
       },
     },
+    {
+      name: "files",
+      description: "List workspace files — /files [query] to filter by name",
+      aliases: ["/files"],
+      execute: () => {
+        const result = useChatStore.getState().listFilesCmd();
+        useChatStore.getState().addMessage({ role: "assistant", content: result });
+      },
+    },
+    {
+      name: "file",
+      description: "Read a workspace file — /file <path>",
+      aliases: ["/file", "/cat"],
+      execute: () => {
+        useChatStore.getState().addMessage({
+          role: "assistant",
+          content: "Usage: /file <relative-path>\nReads the contents of a workspace file (up to 12KB).",
+        });
+      },
+    },
+    {
+      name: "git",
+      description: "Show git status — branch, clean/dirty, recent changes",
+      aliases: ["/git"],
+      execute: () => {
+        const { gitBranch, gitStatus } = useChatStore.getState();
+        const branch = gitBranch ?? "not a git repo";
+        const status = gitStatus === "clean" ? "clean" : gitStatus === "dirty" ? "dirty" : "unknown";
+        const icon = gitStatus === "clean" ? "✓" : gitStatus === "dirty" ? "✗" : "";
+        useChatStore.getState().addMessage({
+          role: "assistant",
+          content: `  Branch:  ${branch}\n  Status:  ${icon} ${status}\n  Cwd:     ${process.cwd()}`,
+        });
+      },
+    },
   ];
 }
 
