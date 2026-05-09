@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import kleur from 'kleur';
 import { estimateCost, estimateTokens, pad, repeat, truncate, wrapText } from '../render.js';
 import { readPreview, formatFileSize, formatFileMtime } from '../files.js';
@@ -999,5 +1000,62 @@ function renderStreamingStatusBar(state, width) {
 }
 
 function renderPreviewPane(state, width, height) {
-  return [];
+  if (!state.previewFile) return [];
+  const w = Math.max(20, width);
+  const h = Math.max(5, height);
+
+  const absPath = path.resolve(state.cwd, state.previewFile);
+  let content;
+  try {
+    content = fs.readFileSync(absPath, 'utf8');
+  } catch (err) {
+    return [
+      kleur.bold('▸ Preview'),
+      kleur.gray('─'.repeat(w)),
+      kleur.red(`  Could not read: ${state.previewFile}`),
+      kleur.gray('─'.repeat(w)),
+      kleur.gray('  Esc to close'),
+    ];
+  }
+
+  const stat = fs.statSync(absPath);
+  const sizeStr = formatFileSize(stat.size);
+  const ext = state.previewFile.includes('.') ? state.previewFile.split('.').pop() : '';
+  const lang = langFromExt(ext);
+
+  const lines = content.split('\n');
+  const maxContentLines = h - 4; // header + separators + hint
+  const scroll = Math.max(0, Math.min(state.previewScroll ?? 0, Math.max(0, lines.length - maxContentLines)));
+  const visible = lines.slice(scroll, scroll + maxContentLines);
+
+  const lineNumWidth = String(scroll + visible.length).length;
+  const maxCodeWidth = w - lineNumWidth - 3; // space for line num + margin
+
+  const out = [];
+  out.push(kleur.bold(`▸ Preview: ${kleur.cyan(state.previewFile)}  ${kleur.gray(sizeStr)}  ${kleur.gray('·  Esc close  ·  ↑↓ scroll')}`));
+  out.push(kleur.gray('─'.repeat(w)));
+
+  for (let i = 0; i < visible.length; i++) {
+    const lineNum = scroll + i + 1;
+    const num = kleur.gray(String(lineNum).padStart(lineNumWidth) + ' │ ');
+    const raw = visible[i];
+    const highlighted = colourLine(raw, lang);
+    const truncated = truncate(highlighted, maxCodeWidth);
+    out.push(num + truncated);
+  }
+
+  if (lines.length > scroll + visible.length) {
+    const remaining = lines.length - (scroll + visible.length);
+    out.push(kleur.gray(`  … ${remaining} more line${remaining !== 1 ? 's' : ''} · ↓ to scroll`));
+  }
+
+  if (scroll > 0) {
+    out.push(kleur.gray(`  … ${scroll} line${scroll !== 1 ? 's' : ''} above · ↑ to scroll`));
+  }
+
+  out.push(kleur.gray('─'.repeat(w)));
+  return out;
 }
+
+// Export the helpers so cli.js can use them
+export { langFromExt, colourLine };

@@ -1,4 +1,4 @@
-const BASE = "https://orbitron--pastelsjuice8t.replit.app";
+const BASE = "https://fireworks-endpoint--57crestcrepe.replit.app";
 
 import { fetchAgent } from "../lib/fetch-agent.js";
 

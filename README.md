@@ -60,7 +60,7 @@ Orbitron reads configuration from `~/.config/orbitron/config.json` (or `%APPDATA
 | Key | Env Var | Default | Description |
 |-----|---------|---------|-------------|
 | `apiKey` | `ORBITRON_API_KEY` | — | API key for the backend |
-| `baseUrl` | `ORBITRON_BASE_URL` | `https://fireworks-endpoint--57crestcrepe.replit.app` | Backend URL |
+| `baseUrl` | `ORBITRON_BACKEND_URL` | `https://orbitron--pastelsjuice8t.replit.app` | Backend URL |
 | `model` | `ORBITRON_MODEL` | — | Default model ID |
 | `temperature` | — | `0.2` | Sampling temperature (0–2) |
 | `maxTokens` | — | `2048` | Max response length in tokens |
@@ -232,7 +232,7 @@ The backend client supports SSE streaming with automatic retry, token counting v
 
 ## Backend
 
-Default backend: `https://fireworks-endpoint--57crestcrepe.replit.app`
+Default backend: `https://orbitron--pastelsjuice8t.replit.app`
 
 OpenAI-compatible endpoints:
 - `POST /api/chat` — streaming chat (`modelID`, `messages`, `temperature`, `max_tokens`, `stream`)
