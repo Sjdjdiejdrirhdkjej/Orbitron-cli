@@ -579,19 +579,41 @@ export function renderChatPane(messages, messageTimestamps, input, width, height
       const dots = '○'.repeat(typingDots) + '◌'.repeat(3 - typingDots);
       rows.push(kleur.gray(`           ${kleur.cyan('▸')} assistant is thinking${dots}`));
     }
+    // ── Expandable result block (model reasoning output) ────────────
     if (isLast && message.role === 'assistant' && lastResponseDiff) {
-      const preview = diffExpanded
-        ? truncate(lastResponseDiff, 60)
-        : 'click to expand';
       const icon = diffExpanded ? '▼' : '▶';
-      rows.push(kleur.gray(`           ${icon} [/result] ${preview}`));
+      const label = kleur.gray(`           ${icon} `) + kleur.cyan().inverse(' result ') + kleur.gray(' /expand · /collapse');
+      rows.push(label);
+      if (diffExpanded) {
+        const diffLines = lastResponseDiff.split('\n');
+        const maxLines = 8;
+        const shown = diffLines.slice(0, maxLines);
+        for (const line of shown) {
+          const rendered = renderMarkdownLine(line);
+          rows.push(kleur.gray('             ') + rendered);
+        }
+        if (diffLines.length > maxLines) {
+          rows.push(kleur.gray(`             … ${diffLines.length - maxLines} more lines`));
+        }
+      }
     }
+    // ── Expandable think block (chain-of-thought reasoning) ─────────
     if (isLast && message.role === 'assistant' && lastResponseThink) {
-      const preview = thinkExpanded
-        ? truncate(lastResponseThink, 60)
-        : 'click to expand';
       const icon = thinkExpanded ? '▼' : '▶';
-      rows.push(kleur.gray(`           ${icon} [/think] ${preview}`));
+      const label = kleur.gray(`           ${icon} `) + kleur.yellow().inverse(' think ') + kleur.gray(' /expand · /collapse');
+      rows.push(label);
+      if (thinkExpanded) {
+        const thinkLines = lastResponseThink.split('\n');
+        const maxLines = 8;
+        const shown = thinkLines.slice(0, maxLines);
+        for (const line of shown) {
+          const rendered = renderMarkdownLine(line);
+          rows.push(kleur.gray('             ') + rendered);
+        }
+        if (thinkLines.length > maxLines) {
+          rows.push(kleur.gray(`             … ${thinkLines.length - maxLines} more lines`));
+        }
+      }
     }
     rows.push('');
   }

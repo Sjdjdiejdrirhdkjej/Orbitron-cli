@@ -5,6 +5,7 @@ import { encode as encodeTokens } from "gpt-tokenizer";
 import fs from "node:fs";
 import path from "node:path";
 import { gitBranch, gitStatus, walkWorkspace, readPreview, formatFileSize, filterFilesByQuery } from "../files.js";
+import { fetchAgent } from "../lib/fetch-agent.js";
 
 export const ORBITRON_BACKEND_URL = "https://orbitron--pastelsjuice8t.replit.app";
 
@@ -319,7 +320,9 @@ export const useChatStore = create<ChatState>()(
           method: "HEAD",
           signal: controller.signal,
           headers: { accept: "application/json" },
+          dispatcher: fetchAgent,
         });
+        await res.text();
         set((s) => {
           s.backendLatencyMs = Date.now() - start;
           s.backendHealth = res.ok ? "ok" : "error";

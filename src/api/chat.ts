@@ -1,5 +1,7 @@
 const BASE = "https://orbitron--pastelsjuice8t.replit.app";
 
+import { fetchAgent } from "../lib/fetch-agent.js";
+
 export function resolveApiUrl(baseUrl: string, pathname: string): string {
   const base = baseUrl.replace(/\/$/, "");
   return new URL(pathname, `${base}/`).toString();
@@ -34,6 +36,7 @@ function normaliseMessages(messages: ChatMessage[] | undefined): ChatMessage[] {
 export async function listModels(baseUrl: string): Promise<ModelInfo[]> {
   const res = await fetch(resolveApiUrl(baseUrl, "/v1/models"), {
     headers: { accept: "application/json" },
+    dispatcher: fetchAgent,
   });
   const text = await res.text();
   if (!res.ok) {
@@ -89,6 +92,7 @@ export async function* streamChat({
       stream: true,
     }),
     signal,
+    dispatcher: fetchAgent,
   });
 
   if (!res.ok) {
