@@ -296,7 +296,7 @@ The TUI now exposes backend URL switching and the onboarding copy was clarified 
 
 - Launch screen now treats API key entry as optional and shows backend health/latency up front.
 - Command text has been tightened to Orbitron-specific wording so the app reads as a backend-connected TUI, not a Codebuff fork.
-- Backend remains pinned to `https://fireworks-endpoint--57crestcrepe.replit.app`; `/backend` is now compatibility-only and points users to `/status` and `/models` rather than implying switching is supported.
+- Backend remains pinned to `https://orbitron--pastelsjuice8t.replit.app`; `/backend` is now compatibility-only and points users to `/status` and `/models` rather than implying switching is supported.
 - Legacy JS startup path was hardened too: it now boots straight into chat, with the auth screen treated as historical/optional UI only.
 - `baseUrl` is now forced to the Orbitron backend in config load/save/merge paths so the app can't drift back to a configurable Codebuff-style backend.
 - `/key` is now legacy-only terminology; any key handling should read as optional backend configuration, not a login gate.
@@ -307,7 +307,7 @@ The TUI now exposes backend URL switching and the onboarding copy was clarified 
 ## Run 2026-05-08 — Backend URL update + rich welcome screen
 
 ### Backend URL switched
-- All references to `https://fireworks-endpoint--57crestcrepe.replit.app` replaced with `https://fireworks-endpoint--57crestcrepe.replit.app`
+- All references to `https://fireworks-endpoint--57crestcrepe.replit.app` replaced with `https://orbitron--pastelsjuice8t.replit.app`
 - Files updated: `src/api/chat.ts`, `src/store/chat-store.ts`, `src/ui.js`, `src/config.js`, `src/commands.ts`, `src/protocol.js`, `orbitron.config.json`, `AGENTS.md`
 - `src/ui.js` banner text line also updated (was missed in first pass)
 
