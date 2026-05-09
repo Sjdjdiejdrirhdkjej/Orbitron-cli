@@ -135,8 +135,7 @@ export async function* streamChat({
       }
     }
   } finally {
-    if (!signal?.aborted) {
-      reader.cancel().catch(() => {});
-    }
+    // Always cancel reader to release socket, regardless of abort state
+    try { await reader.cancel(); } catch {}
   }
 }

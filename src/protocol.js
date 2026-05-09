@@ -143,7 +143,7 @@ export async function* streamChatCompletion({ baseUrl, apiKey, modelID, messages
           }
         }
       } finally {
-        reader.cancel();
+        await reader.cancel().catch(() => {});
       }
 
       return;

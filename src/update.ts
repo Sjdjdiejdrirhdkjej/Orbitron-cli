@@ -6,7 +6,6 @@ import { execSync, spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import https from "node:https";
 
 export interface UpdateInfo {
   current: string;
@@ -36,12 +35,9 @@ export function getCurrentVersion(): string {
 export async function checkForUpdate(): Promise<UpdateInfo> {
   const current = getCurrentVersion();
   try {
-    const agent = new https.Agent({ rejectUnauthorized: false });
     const res = await fetch("https://registry.npmjs.org/orbitron-tui/latest", {
       headers: { "Accept": "application/json" },
       signal: AbortSignal.timeout(5000),
-      // @ts-expect-error undici/fetch accepts agent via dispatcher, but types may vary
-      dispatcher: agent,
     });
     if (!res.ok) throw new Error(`npm registry returned ${res.status}`);
     const data = (await res.json()) as { version?: string };

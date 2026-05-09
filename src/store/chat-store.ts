@@ -316,7 +316,9 @@ export const useChatStore = create<ChatState>()(
         signal: AbortSignal.timeout(5000),
         headers: { accept: "application/json" },
       })
-        .then((r) => {
+        .then(async (r) => {
+          // Consume body to prevent socket leak (CLOSE_WAIT)
+          try { await r.text(); } catch {}
           set((s) => {
             s.backendLatencyMs = Date.now() - start;
             s.backendHealth = r.ok ? "ok" : "error";
