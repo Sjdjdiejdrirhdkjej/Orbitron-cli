@@ -21,13 +21,17 @@ export function getCurrentVersion(): string {
     try {
       const pkg = JSON.parse(readFileSync(globalPath, "utf8"));
       if (pkg.version) return pkg.version;
-    } catch { /* fall through */ }
+    } catch {
+      console.warn("[orbitron] Could not read global package.json for version");
+      /* fall through */
+    }
     // Fall back to local source
     const selfDir = dirname(__dirname);
     const pkgPath = join(selfDir, "package.json");
     const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
     return pkg.version ?? "0.0.0";
   } catch {
+    console.warn("[orbitron] Could not determine current version");
     return "0.0.0";
   }
 }
@@ -49,8 +53,9 @@ export async function checkForUpdate(): Promise<UpdateInfo> {
     const data = (await res.json()) as { version?: string };
     const latest = data.version ?? current;
     return { current, latest, outdated: compareVersions(latest, current) > 0 };
-  } catch {
-    // Network/SSL error — silently skip update check
+  } catch (err) {
+    console.warn("[orbitron] Update check failed:", err instanceof Error ? err.message : String(err));
+    // Network/SSL error — skip update check
     return { current, latest: current, outdated: false };
   }
 }
@@ -77,7 +82,8 @@ export async function performUpdate(): Promise<boolean> {
     // Exit immediately — the background process will complete the install
     process.exit(0);
     return true; // unreachable
-  } catch {
+  } catch (err) {
+    console.warn("[orbitron] Failed to spawn update:", err instanceof Error ? err.message : String(err));
     return false;
   }
 }

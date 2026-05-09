@@ -17,6 +17,17 @@ import { runOrchestratedReply } from './orchestrator.js';
 import { handleSlashCommand } from './commands.js';
 import path from 'node:path';
 
+// ─── Global error handlers ───────────────────────────────────────────────────
+process.on('unhandledRejection', (reason) => {
+  console.error(kleur.red('Unhandled rejection:'), reason instanceof Error ? reason.stack ?? reason.message : String(reason));
+  process.exit(1);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error(kleur.red('Uncaught exception:'), error instanceof Error ? error.stack ?? error.message : String(error));
+  process.exit(1);
+});
+
 // Session auto-save — call after every message exchange
 let lastSaveAt = 0;
 
