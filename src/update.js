@@ -99,10 +99,11 @@ export async function fetchLatestVersion(fetchImpl = fetch) {
   const res = await fetchImpl(`https://registry.npmjs.org/${PACKAGE_NAME}/latest`, {
     headers: { accept: 'application/json' },
   });
+  const text = await res.text();
   if (!res.ok) {
-    throw new Error(`npm registry request failed (${res.status})`);
+    throw new Error(`npm registry request failed (${res.status}): ${text.slice(0, 200)}`);
   }
-  const data = await res.json();
+  const data = JSON.parse(text);
   if (typeof data?.version !== 'string') {
     throw new Error('npm registry response did not include a version');
   }

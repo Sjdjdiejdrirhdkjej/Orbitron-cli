@@ -44,47 +44,80 @@ function autoSaveSession() {
 
 let fileWatcher = null;
 let fileWatcherDebounce = null;
+let fileWatcherPollInterval = null;
+const MAX_WATCHED_FILES = 50;
 
 /**
  * Start watching the workspace directory for file changes.
  * Debounces rapid events and calls `redraw()` to refresh the file pane.
+ * If the directory contains more than MAX_WATCHED_FILES entries, falls back
+ * to a lightweight polling loop instead of fs.watch to avoid EMFILE/ENOSPC.
  */
 function startFileWatcher(cwd, redraw) {
-  if (fileWatcher) {
-    fileWatcher.close();
-    fileWatcher = null;
+  stopFileWatcher();
+
+  let fileCount = 0;
+  try {
+    const countFiles = (dir) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === 'sessions') continue;
+        if (entry.isDirectory()) {
+          countFiles(path.join(dir, entry.name));
+        } else {
+          fileCount++;
+          if (fileCount > MAX_WATCHED_FILES) return;
+        }
+      }
+    };
+    countFiles(cwd);
+  } catch {
+    fileCount = MAX_WATCHED_FILES + 1;
   }
-  if (fileWatcherDebounce) {
-    clearTimeout(fileWatcherDebounce);
-    fileWatcherDebounce = null;
+
+  if (fileCount > MAX_WATCHED_FILES) {
+    fileWatcherPollInterval = setInterval(() => {
+      state.gitBranch = gitBranch(cwd);
+      state.gitStatus = gitStatus(cwd);
+      state.files = walkWorkspace(cwd);
+      redraw();
+    }, 3000);
+    return;
   }
 
   try {
     fileWatcher = fs.watch(cwd, { recursive: true }, (eventType, filename) => {
-      // Ignore noisy dirs and temp files
       if (!filename) return;
       const skip = ['node_modules', '.git', '.cache', 'sessions', 'Trash'];
       if (skip.some(d => filename.includes(d))) return;
-
       if (fileWatcherDebounce) clearTimeout(fileWatcherDebounce);
       fileWatcherDebounce = setTimeout(() => {
         fileWatcherDebounce = null;
-        // Refresh git info and files before each redraw
         state.gitBranch = gitBranch(cwd);
         state.gitStatus = gitStatus(cwd);
         state.files = walkWorkspace(cwd);
         redraw();
-      }, 800); // debounce ~800ms to coalesce rapid changes
+      }, 800);
     });
-  } catch {
-    // Filesystem watch not supported — silently skip
+  } catch (err) {
+    if (err.code === 'EMFILE' || err.code === 'ENOSPC') {
+      fileWatcherPollInterval = setInterval(() => {
+        state.gitBranch = gitBranch(cwd);
+        state.gitStatus = gitStatus(cwd);
+        state.files = walkWorkspace(cwd);
+        redraw();
+      }, 3000);
+    }
   }
 }
 
 function stopFileWatcher() {
   if (fileWatcher) {
-    try { fileWatcher.close(); } catch { /* ignore */ }
+    fileWatcher.close();
     fileWatcher = null;
+  }
+  if (fileWatcherPollInterval) {
+    clearInterval(fileWatcherPollInterval);
+    fileWatcherPollInterval = null;
   }
   if (fileWatcherDebounce) {
     clearTimeout(fileWatcherDebounce);

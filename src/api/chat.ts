@@ -1,4 +1,4 @@
-const BASE = "https://fireworks-endpoint--57crestcrepe.replit.app";
+const BASE = "https://orbitron--pastelsjuice8t.replit.app";
 
 export function resolveApiUrl(baseUrl: string, pathname: string): string {
   const base = baseUrl.replace(/\/$/, "");
@@ -35,8 +35,10 @@ export async function listModels(baseUrl: string): Promise<ModelInfo[]> {
   const res = await fetch(resolveApiUrl(baseUrl, "/v1/models"), {
     headers: { accept: "application/json" },
   });
-  if (!res.ok) throw new Error(`Model fetch failed (${res.status})`);
   const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`Model fetch failed (${res.status})`);
+  }
   try {
     const data = JSON.parse(text);
     if (Array.isArray(data?.data)) return data.data;

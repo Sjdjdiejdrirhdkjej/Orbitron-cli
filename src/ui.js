@@ -4,7 +4,7 @@ import { renderKeyboardHelp, renderBudgetMeter } from './screens/overview.js';
 import { readPreview } from './files.js';
 
 /**
- * Render a rich, Codebuff CLI-style welcome screen with ASCII art,
+ * Render a rich, polished CLI-style welcome screen with ASCII art,
  * connection status, model info, and quick-reference commands.
  */
 export function banner(state = null) {

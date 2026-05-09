@@ -6,7 +6,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { gitBranch, gitStatus, walkWorkspace, readPreview, formatFileSize, filterFilesByQuery } from "../files.js";
 
-export const ORBITRON_BACKEND_URL = "https://fireworks-endpoint--57crestcrepe.replit.app";
+export const ORBITRON_BACKEND_URL = "https://orbitron--pastelsjuice8t.replit.app";
 
 export interface Message {
   id: string;
@@ -309,26 +309,28 @@ export const useChatStore = create<ChatState>()(
 
     backendHealth: "unknown",
     backendLatencyMs: null,
-    checkHealth: () => {
+    checkHealth: async () => {
       const { baseUrl } = get().config;
       const start = Date.now();
-      fetch(baseUrl + "/v1/models", {
-        signal: AbortSignal.timeout(5000),
-        headers: { accept: "application/json" },
-      })
-        .then(async (r) => {
-          // Consume body to prevent socket leak (CLOSE_WAIT)
-          try { await r.text(); } catch {}
-          set((s) => {
-            s.backendLatencyMs = Date.now() - start;
-            s.backendHealth = r.ok ? "ok" : "error";
-          });
-        })
-        .catch(() => {
-          set((s) => {
-            s.backendHealth = "error";
-          });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const res = await fetch(baseUrl + "/v1/models", {
+          method: "HEAD",
+          signal: controller.signal,
+          headers: { accept: "application/json" },
         });
+        set((s) => {
+          s.backendLatencyMs = Date.now() - start;
+          s.backendHealth = res.ok ? "ok" : "error";
+        });
+      } catch {
+        set((s) => {
+          s.backendHealth = "error";
+        });
+      } finally {
+        clearTimeout(timeout);
+      }
     },
 
     inputHistory: [],

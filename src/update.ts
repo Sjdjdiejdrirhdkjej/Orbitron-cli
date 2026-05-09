@@ -35,11 +35,17 @@ export function getCurrentVersion(): string {
 export async function checkForUpdate(): Promise<UpdateInfo> {
   const current = getCurrentVersion();
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     const res = await fetch("https://registry.npmjs.org/orbitron-tui/latest", {
       headers: { "Accept": "application/json" },
-      signal: AbortSignal.timeout(5000),
+      signal: controller.signal,
     });
-    if (!res.ok) throw new Error(`npm registry returned ${res.status}`);
+    clearTimeout(timeout);
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`npm registry returned ${res.status}: ${text.slice(0, 200)}`);
+    }
     const data = (await res.json()) as { version?: string };
     const latest = data.version ?? current;
     return { current, latest, outdated: compareVersions(latest, current) > 0 };
