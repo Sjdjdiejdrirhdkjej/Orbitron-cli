@@ -79,9 +79,9 @@ export async function runOrchestratedReply({
   const retries = state.config?.retries;
   const completedRoles = [];
 
-  const discoverModel = process.env.ORBITRON_DISCOVER_MODEL || 'deepseek-v4-pro';
-  const thinkModel = process.env.ORBITRON_THINK_MODEL || 'gpt-5.4';
-  const reviewModel = process.env.ORBITRON_REVIEW_MODEL || 'kimi-k2.6';
+  const discoverModel = state.config.discoverModel || process.env.ORBITRON_DISCOVER_MODEL || 'deepseek-v4-pro';
+  const thinkModel = state.config.thinkModel || process.env.ORBITRON_THINK_MODEL || 'gpt-5.4';
+  const reviewModel = state.config.reviewModel || process.env.ORBITRON_REVIEW_MODEL || 'kimi-k2.6';
 
   const announce = (role, detail) => {
     updateStage(state, role, detail, completedRoles);

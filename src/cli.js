@@ -181,16 +181,31 @@ function createInteractiveInput(onSubmit) {
   let cursorPos = 0;
   let completionIndex = 0;
   let currentCompletions = [];
+  let suggestion = ''; // Auto-suggestion from history
 
   process.stdin.setRawMode?.(true);
   process.stdin.resume?.();
   process.stdin.setEncoding?.('utf8');
 
-  const prompt = kleur.cyan('orbitron');
-  process.stdout.write('\n' + prompt + ' ');
+  function getPrompt() {
+    if (state.backend?.health === "ok") {
+      return kleur.cyan("orbitron ") + kleur.green("●");
+    } else if (state.backend?.health === "error") {
+      return kleur.cyan("orbitron ") + kleur.red("●");
+    } else {
+      return kleur.cyan("orbitron ") + kleur.gray("○");
+    }
+  }
+
+  process.stdout.write('\n' + getPrompt() + ' ');
 
   function redrawInput() {
-    process.stdout.write('\r' + ' '.repeat(80) + '\r' + prompt + ' ' + buffer + '\x1b[' + (buffer.length - cursorPos + prompt.length + 2) + 'D');
+    // Show buffer + suggestion (dimmed) + cursor positioning
+    const prompt = getPrompt();
+    const suggestionText = suggestion.length > 0 && buffer.length > 0 && suggestion.startsWith(buffer) && suggestion !== buffer 
+      ? kleur.gray(suggestion.slice(buffer.length)) 
+      : '';
+    process.stdout.write('\r' + ' '.repeat(80) + '\r' + prompt + ' ' + buffer + suggestionText + '\x1b[' + (buffer.length + suggestionText.length + prompt.length + 2) + 'D');
   }
 
   function printCompletions() {
@@ -199,12 +214,18 @@ function createInteractiveInput(onSubmit) {
     for (const c of currentCompletions) {
       process.stdout.write(kleur.gray('  ' + c) + '\n');
     }
-    process.stdout.write('\r' + prompt + ' ' + buffer);
+    process.stdout.write('\r' + getPrompt() + ' ' + buffer);
   }
 
   const handler = (key) => {
     if (key === '\t') {
-      if (currentCompletions.length === 0) {
+      // If suggestion exists, accept it with Right Arrow, otherwise fallback to command completion
+      if (suggestion.length > 0 && buffer.length > 0 && suggestion.startsWith(buffer) && suggestion !== buffer) {
+        buffer = suggestion;
+        cursorPos = buffer.length;
+        suggestion = ''; // Clear suggestion after accepting
+        redrawInput();
+      } else if (currentCompletions.length === 0) {
         currentCompletions = getCompletions(buffer, state);
         completionIndex = 0;
       }
@@ -212,6 +233,15 @@ function createInteractiveInput(onSubmit) {
         buffer = currentCompletions[completionIndex % currentCompletions.length];
         cursorPos = buffer.length;
         completionIndex++;
+        redrawInput();
+      }
+      return;
+    }
+    if (key === '\x1b[C') { // Right arrow - accept suggestion
+      if (suggestion.length > 0 && buffer.length > 0 && suggestion.startsWith(buffer) && suggestion !== buffer) {
+        buffer = suggestion;
+        cursorPos = buffer.length;
+        suggestion = ''; // Clear suggestion after accepting
         redrawInput();
       }
       return;
@@ -242,7 +272,7 @@ function createInteractiveInput(onSubmit) {
           completionIndex = 0;
           redrawInput();
           onSubmit(chosen);
-          process.stdout.write(prompt + ' ');
+          process.stdout.write(getPrompt() + ' ');
         } else {
           redrawInput();
         }
@@ -312,7 +342,7 @@ function createInteractiveInput(onSubmit) {
       buffer = '';
       cursorPos = 0;
       onSubmit(line);
-      process.stdout.write(prompt + ' ');
+      process.stdout.write(getPrompt() + ' ');
       return;
     }
     if (key === '\x01') { // Ctrl+A - move to start of line
@@ -358,7 +388,7 @@ function createInteractiveInput(onSubmit) {
       buffer = '';
       cursorPos = 0;
       currentCompletions = [];
-      process.stdout.write(prompt + ' ');
+      process.stdout.write(getPrompt() + ' ');
       return;
     }
     if (key === '\r' || key === '\n') { // Enter
@@ -388,7 +418,7 @@ function createInteractiveInput(onSubmit) {
         buffer = '';
         cursorPos = 0;
         onSubmit(codeBlock);
-        process.stdout.write(prompt + ' ');
+        process.stdout.write(getPrompt() + ' ');
         return;
       }
       // ───────────────────────────────────────────────────────────
@@ -401,7 +431,7 @@ function createInteractiveInput(onSubmit) {
       buffer = '';
       cursorPos = 0;
       onSubmit(line);
-      process.stdout.write(prompt + ' ');
+      process.stdout.write(getPrompt() + ' ');
       return;
     }
     if (key === '\x7f') { // Backspace

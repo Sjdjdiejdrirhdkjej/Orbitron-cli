@@ -36,13 +36,24 @@ export interface ModelInfo {
 
 export interface Config {
   baseUrl: string;
-  apiKey: string;
+  chatPath: string;
+  modelsPath: string;
   model: string;
   temperature: number;
   maxTokens: number;
+  retries: number;
+  apiKey: string;
+  systemPrompt: string;
+  autosave: boolean;
+  theme: string;
+  direct: boolean;
   contextWindow?: number;
   conversationTitle?: string;
   conversationCreatedAt?: number;
+  // Orchestrator model configuration
+  discoverModel?: string;
+  thinkModel?: string;
+  reviewModel?: string;
 }
 
 export type AppScreen = "apikey" | "chat";
@@ -172,6 +183,11 @@ function persistConfig(config: Config): void {
           contextWindow: config.contextWindow,
           conversationTitle: config.conversationTitle,
           conversationCreatedAt: config.conversationCreatedAt,
+          direct: config.direct,
+          // Orchestrator model configuration
+          discoverModel: config.discoverModel,
+          thinkModel: config.thinkModel,
+          reviewModel: config.reviewModel,
         },
         null,
         2,
@@ -184,10 +200,21 @@ function persistConfig(config: Config): void {
 
 const DEFAULT_CONFIG: Config = {
   baseUrl: ORBITRON_BACKEND_URL,
-  apiKey: process.env.ORBITRON_API_KEY?.trim() || "",
+  chatPath: "/v1/chat/completions",
+  modelsPath: "/v1/models",
   model: process.env.ORBITRON_MODEL?.trim() || "gpt-4.1",
   temperature: Number(process.env.ORBITRON_TEMPERATURE ?? 0.2),
   maxTokens: Number(process.env.ORBITRON_MAX_TOKENS ?? 2048),
+  retries: Number(process.env.ORBITRON_RETRIES ?? 3),
+  apiKey: process.env.ORBITRON_API_KEY?.trim() || "",
+  systemPrompt: process.env.ORBITRON_SYSTEM_PROMPT?.trim() || "You are a concise, practical coding assistant for a terminal workflow.",
+  autosave: process.env.ORBITRON_AUTOSAVE ?? true,
+  theme: process.env.ORBITRON_THEME ?? "default",
+  direct: process.env.ORBITRON_DIRECT === "true",
+  // Orchestrator model configuration
+  discoverModel: process.env.ORBITRON_DISCOVER_MODEL || 'deepseek-v4-pro',
+  thinkModel: process.env.ORBITRON_THINK_MODEL || 'gpt-5.4',
+  reviewModel: process.env.ORBITRON_REVIEW_MODEL || 'kimi-k2.6',
 };
 
 /** Summarize a message array to keep context under limit */
@@ -384,7 +411,7 @@ export const useChatStore = create<ChatState>()(
         const session = sessions[sessionId];
         if (!session) return;
         s.messages = session.messages;
-        s.config = { ...session.config, baseUrl: ORBITRON_BACKEND_URL };
+        s.config = { ...session.config, baseUrl: ORBITRON_BACKEND_URL, discoverModel: session.config.discoverModel, thinkModel: session.config.thinkModel, reviewModel: session.config.reviewModel };
         s.currentSessionId = sessionId;
         persistConfig(s.config);
       }),

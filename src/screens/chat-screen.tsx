@@ -822,6 +822,14 @@ export function ChatScreen(_props: Props) {
     setAutoSuggestion(match || "");
   }, [input, inputHistory, isEditing]);
 
+  // Periodic health check every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      get().checkHealth();
+    }, 30000); // 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
   // Handle PgDn: jump to latest when newMsgCount is clicked
   const handleJumpToLatest = useCallback(() => {
     setScrollOffset(0);
@@ -1265,7 +1273,7 @@ export function ChatScreen(_props: Props) {
                 {healthLabel ? ` · ${healthLabel}` : ""}
               </text>
               <text style={{ fg: theme.muted }}>
-                {backendLabel} · {modelLabel}{modelContextLabel ? ` · ${modelContextLabel}` : ""}{modelPriceLabel ? ` · ${modelPriceLabel}` : ""}
+                {backendLabel} · {modelLabel}{modelContextLabel ? ` · ${modelContextLabel}` : ""}{modelPriceLabel ? ` · ${modelPriceLabel}` : ""}{config.direct ? " · Direct mode: ON" : ""}
               </text>
               <text style={{ fg: theme.muted }}> </text>
               <text style={{ fg: theme.foreground }}>Type a prompt, or jump in with a command:</text>
@@ -1462,6 +1470,7 @@ export function ChatScreen(_props: Props) {
       <box style={{ flexDirection: "row", padding: 0, flexShrink: 0, alignItems: "center" }}>
         <text style={{ fg: healthColor }}>{healthDot}</text>
         {healthLabel ? <text style={{ fg: healthColor, marginLeft: 1 }}>{healthLabel}</text> : null}
+        {config.baseUrl.replace("https://", "").replace("http://", "").replace(/\/$/, "")}
         {gitBranchName ? (
           <>
             <text style={{ fg: theme.muted, marginLeft: 2 }}>⎇</text>

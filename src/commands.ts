@@ -32,6 +32,7 @@ export function buildStatusReport(): string {
     `  Session:       ${sessionTitle} · ${messageCount} msgs · ${sessionState}`,
     `  Context:       ${contextLabel}`,
     `  State:         ${stateLabel}`,
+    `  Git:           ${store.gitBranch ?? "none"} ${store.gitStatus === "dirty" ? "(dirty)" : store.gitStatus === "clean" ? "(clean)" : ""},
     `  Saved sessions: ${store.listSessions().length}`,
   ];
   if (store.lastError) {
@@ -205,9 +206,12 @@ export function getCommands(): Command[] {
       description: "Set runtime config — /set temperature 0.5 · /set maxTokens 4096 · /set model <id>",
       aliases: ["/set"],
       execute: () => {
+        const store = useChatStore.getState();
+        const config = store.config;
+        const maskedApiKey = config.apiKey ? `${config.apiKey.slice(0, 4)}...${config.apiKey.slice(-4)}` : "(not set)";
         useChatStore.getState().addMessage({
           role: "assistant",
-          content: "Usage: /set <key> <value>\n  temperature <0–2>  — response randomness (default: 0.2)\n  maxTokens <n>      — max response length in tokens (default: 2048)\n  model <id>         — switch to a different model\n\nCurrent values:\n  temperature  " + store.config.temperature + "\n  maxTokens    " + store.config.maxTokens + "\n  model        " + store.config.model,
+          content: "Usage: /set <key> <value>\n  temperature <0–2>  — response randomness (default: 0.2)\n  maxTokens <n>      — max response length in tokens (default: 2048)\n  model <id>         — switch to a different model\n  theme <name>       — color theme (default: default)\n  direct <bool>      — fast mode (skip orchestration, default: false)\n  autosave <bool>    — auto-save sessions (default: true)\n\nCurrent values:\n  temperature  " + config.temperature + "\n  maxTokens    " + config.maxTokens + "\n  model        " + config.model + "\n  theme        " + config.theme + "\n  direct       " + config.direct + "\n  autosave     " + config.autosave + "\n  apiKey       " + maskedApiKey,
         });
       },
     },
@@ -305,6 +309,19 @@ export function getCommands(): Command[] {
         useChatStore.getState().addMessage({
           role: "assistant",
           content: `  Branch:  ${branch}\n  Status:  ${icon} ${status}\n  Cwd:     ${process.cwd()}`,
+        });
+      },
+    },
+    {
+      name: "direct",
+      description: "Toggle direct/fast mode (skip orchestration for lower latency)",
+      aliases: ["/direct"],
+      execute: () => {
+        const store = useChatStore.getState();
+        store.setConfig({ direct: !store.config.direct });
+        store.addMessage({ 
+          role: "assistant", 
+          content: `Direct mode: ${store.config.direct ? 'enabled' : 'disabled'}` 
         });
       },
     },

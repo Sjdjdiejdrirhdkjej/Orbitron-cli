@@ -18,6 +18,10 @@ export const DEFAULT_CONFIG = {
   autosave: true,
   theme: 'default',
   direct: false,
+  // Orchestrator model configuration
+  discoverModel: 'deepseek-v4-pro',
+  thinkModel: 'gpt-5.4',
+  reviewModel: 'kimi-k2.6',
 };
 
 const CONFIG_KEYS = new Set([
